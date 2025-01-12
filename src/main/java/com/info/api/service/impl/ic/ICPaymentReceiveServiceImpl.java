@@ -99,27 +99,32 @@ public class ICPaymentReceiveServiceImpl implements ICPaymentReceiveService {
                 searchApiResponse.setApiStatus(Constants.API_STATUS_VALID);
                 searchApiResponse.setErrorMessage(ObjectConverter.convertObjectToString(responseEntity.getBody()));
                 apiTraceService.deleteById(apiTrace.getId());
-                logger.info("Tracing removed because no record found, uuid: {}", uuid);
+                logger.info("Tracing removed because no record found, uuid: {}",  maskSensitiveData(uuid));
                 return searchApiResponse;
             }
             searchApiResponse.setPayoutStatus(String.valueOf(responseEntity.getStatusCode().value()));
             searchApiResponse.setApiStatus(String.valueOf(responseEntity.getStatusCode().value()));
-            logger.info("Execute paymentReceive for ReferenceNo: {}", referenceNo);
+            logger.info("Execute paymentReceive for ReferenceNo: {}",  maskSensitiveData(referenceNo));
         } catch (Exception e) {
             response = e.getMessage();
             apiTrace.setStatus(Constants.API_STATUS_ERROR);
             searchApiResponse.setApiStatus(Constants.API_STATUS_INVALID);
             searchApiResponse.setErrorMessage(ObjectConverter.convertObjectToString(response));
-            logger.error("Error in paymentReceive for ReferenceNo: {} uuid: {} Exception: {}", referenceNo, uuid, e.getMessage());
+            logger.error("Error in paymentReceive for ReferenceNo: {} uuid: {} Exception: {}", maskSensitiveData(referenceNo), maskSensitiveData(uuid), e.getMessage());
         }
 
         apiTrace.setRequestMsg(referenceNo);
         apiTrace.setResponseMsg(response);
         apiTrace.setCorrelationId(uuid);
         apiTraceService.save(apiTrace);
-        logger.info("paymentReceive successful for ReferenceNo: {} uuid: {} ", referenceNo, uuid);
+        logger.info("paymentReceive successful for ReferenceNo: {} uuid: {} ", maskSensitiveData(referenceNo), maskSensitiveData(uuid));
         return searchApiResponse;
     }
 
-
+    private String maskSensitiveData(String data) {
+        if (data == null || data.length() <= 4) {
+            return "[PROTECTED]";
+        }
+        return data.substring(0, 2) + "****" + data.substring(data.length() - 2);
+    }
 }
