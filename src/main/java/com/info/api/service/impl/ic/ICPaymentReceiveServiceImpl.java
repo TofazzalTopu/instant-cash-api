@@ -1,13 +1,12 @@
 package com.info.api.service.impl.ic;
 
+import com.info.api.dto.SearchApiResponse;
+import com.info.api.dto.ic.ICExchangePropertyDTO;
+import com.info.api.dto.ic.ICOutstandingTransactionDTO;
 import com.info.api.entity.ApiTrace;
 import com.info.api.entity.ICCashRemittanceData;
 import com.info.api.mapper.ICPaymentReceiveRemittanceMapper;
-import com.info.api.dto.ic.ICExchangePropertyDTO;
-import com.info.api.dto.ic.ICOutstandingTransactionDTO;
-import com.info.api.dto.SearchApiResponse;
 import com.info.api.service.common.ApiTraceService;
-import com.info.api.service.common.CommonService;
 import com.info.api.service.ic.ICCashRemittanceDataService;
 import com.info.api.service.ic.ICPaymentReceiveService;
 import com.info.api.util.ApiUtil;
@@ -25,7 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.info.api.util.ObjectConverter.convertObjectToString;
 
@@ -39,7 +40,6 @@ public class ICPaymentReceiveServiceImpl implements ICPaymentReceiveService {
     public String IC_API_FINANCIAL_ID;
 
     private final RestTemplate restTemplate;
-    private final CommonService commonService;
 
     private final ApiTraceService apiTraceService;
 
@@ -50,9 +50,8 @@ public class ICPaymentReceiveServiceImpl implements ICPaymentReceiveService {
     @Value("${bank.code}")
     private String bankCode;
 
-    public ICPaymentReceiveServiceImpl(RestTemplate restTemplate, CommonService commonService, ApiTraceService apiTraceService, ICPaymentReceiveRemittanceMapper mapper, ICCashRemittanceDataService icCashRemittanceDataService) {
+    public ICPaymentReceiveServiceImpl(RestTemplate restTemplate,  ApiTraceService apiTraceService, ICPaymentReceiveRemittanceMapper mapper, ICCashRemittanceDataService icCashRemittanceDataService) {
         this.restTemplate = restTemplate;
-        this.commonService = commonService;
         this.apiTraceService = apiTraceService;
         this.mapper = mapper;
         this.icCashRemittanceDataService = icCashRemittanceDataService;
@@ -100,7 +99,7 @@ public class ICPaymentReceiveServiceImpl implements ICPaymentReceiveService {
                 searchApiResponse.setApiStatus(Constants.API_STATUS_VALID);
                 searchApiResponse.setErrorMessage(ObjectConverter.convertObjectToString(responseEntity.getBody()));
                 apiTraceService.deleteById(apiTrace.getId());
-                logger.info("Tracing removed because no record found, uuid: " + uuid);
+                logger.info("Tracing removed because no record found, uuid: {}", uuid);
                 return searchApiResponse;
             }
             searchApiResponse.setPayoutStatus(String.valueOf(responseEntity.getStatusCode().value()));
@@ -111,14 +110,14 @@ public class ICPaymentReceiveServiceImpl implements ICPaymentReceiveService {
             apiTrace.setStatus(Constants.API_STATUS_ERROR);
             searchApiResponse.setApiStatus(Constants.API_STATUS_INVALID);
             searchApiResponse.setErrorMessage(ObjectConverter.convertObjectToString(response));
-            logger.error("Error in paymentReceive for ReferenceNo: " + referenceNo, uuid, e);
+            logger.error("Error in paymentReceive for ReferenceNo: {} uuid: {} Exception: {}", referenceNo, uuid, e.getMessage());
         }
 
         apiTrace.setRequestMsg(referenceNo);
         apiTrace.setResponseMsg(response);
         apiTrace.setCorrelationId(uuid);
         apiTraceService.save(apiTrace);
-        logger.info("paymentReceive successful for ReferenceNo: " + referenceNo, uuid);
+        logger.info("paymentReceive successful for ReferenceNo: {} uuid: {} ", referenceNo, uuid);
         return searchApiResponse;
     }
 
