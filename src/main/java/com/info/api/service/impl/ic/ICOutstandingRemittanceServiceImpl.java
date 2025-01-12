@@ -1,14 +1,14 @@
-package com.info.api.service.impl.instantCash;
+package com.info.api.service.impl.ic;
 
 import com.info.api.entity.ApiTrace;
 import com.info.api.entity.RemittanceData;
 import com.info.api.mapper.ICOutstandingRemittanceMapper;
-import com.info.api.dto.instantCash.ICExchangePropertyDTO;
-import com.info.api.dto.instantCash.ICOutstandingRemittanceDTO;
-import com.info.api.dto.instantCash.ICOutstandingTransactionDTO;
+import com.info.api.dto.ic.ICExchangePropertyDTO;
+import com.info.api.dto.ic.ICOutstandingRemittanceDTO;
+import com.info.api.dto.ic.ICOutstandingTransactionDTO;
 import com.info.api.service.common.ApiTraceService;
 import com.info.api.service.common.RemittanceDataService;
-import com.info.api.service.instantCash.ICOutstandingRemittanceService;
+import com.info.api.service.ic.ICOutstandingRemittanceService;
 import com.info.api.util.ApiUtil;
 import com.info.api.util.Constants;
 import org.slf4j.Logger;

@@ -1,12 +1,12 @@
 package com.info.api.processor;
 
 import com.info.api.entity.RemittanceData;
-import com.info.api.dto.instantCash.ICExchangePropertyDTO;
+import com.info.api.dto.ic.ICExchangePropertyDTO;
 import com.info.api.service.common.RemittanceDataService;
-import com.info.api.service.instantCash.ICNotifyPaymentStatusRemittanceService;
-import com.info.api.service.instantCash.ICOutstandingRemittanceService;
-import com.info.api.service.instantCash.ICPaymentReceiveService;
-import com.info.api.service.instantCash.ICUnlockRemittanceService;
+import com.info.api.service.ic.ICNotifyPaymentStatusRemittanceService;
+import com.info.api.service.ic.ICOutstandingRemittanceService;
+import com.info.api.service.ic.ICPaymentReceiveService;
+import com.info.api.service.ic.ICUnlockRemittanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

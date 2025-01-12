@@ -1,18 +1,18 @@
-package com.info.api.service.impl.instantCash;
+package com.info.api.service.impl.ic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.info.api.constants.RemittanceDataStatus;
 import com.info.api.entity.ICCashRemittanceData;
 import com.info.api.entity.RemittanceData;
-import com.info.api.dto.instantCash.ICConfirmDTO;
-import com.info.api.dto.instantCash.ICConfirmResponseDTO;
-import com.info.api.dto.instantCash.ICExchangePropertyDTO;
+import com.info.api.dto.ic.ICConfirmDTO;
+import com.info.api.dto.ic.ICConfirmResponseDTO;
+import com.info.api.dto.ic.ICExchangePropertyDTO;
 import com.info.api.dto.PaymentApiResponse;
 import com.info.api.service.common.ApiTraceService;
 import com.info.api.service.common.RemittanceDataService;
 import com.info.api.service.common.RemittanceProcessService;
-import com.info.api.service.instantCash.ICCashRemittanceDataService;
-import com.info.api.service.instantCash.ICNotifyPaymentStatusRemittanceService;
+import com.info.api.service.ic.ICCashRemittanceDataService;
+import com.info.api.service.ic.ICNotifyPaymentStatusRemittanceService;
 import com.info.api.util.ApiUtil;
 import com.info.api.util.Constants;
 import org.slf4j.Logger;

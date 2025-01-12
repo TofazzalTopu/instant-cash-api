@@ -1,7 +1,7 @@
-package com.info.api.service.instantCash;
+package com.info.api.service.ic;
 
-import com.info.api.dto.instantCash.ICExchangePropertyDTO;
-import com.info.api.dto.instantCash.ICPaymentStatusDTO;
+import com.info.api.dto.ic.ICExchangePropertyDTO;
+import com.info.api.dto.ic.ICPaymentStatusDTO;
 
 import javax.validation.constraints.NotNull;
 

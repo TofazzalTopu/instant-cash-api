@@ -1,13 +1,13 @@
-package com.info.api.service.impl.instantCash;
+package com.info.api.service.impl.ic;
 
 import com.info.api.constants.RemittanceDataStatus;
 import com.info.api.entity.ApiTrace;
 import com.info.api.entity.RemittanceData;
-import com.info.api.dto.instantCash.ICExchangePropertyDTO;
+import com.info.api.dto.ic.ICExchangePropertyDTO;
 import com.info.api.service.common.ApiTraceService;
 import com.info.api.service.common.RemittanceDataService;
 import com.info.api.service.impl.common.RemittanceDataProcessServiceImpl;
-import com.info.api.service.instantCash.ICUnlockRemittanceService;
+import com.info.api.service.ic.ICUnlockRemittanceService;
 import com.info.api.util.ApiUtil;
 import com.info.api.util.Constants;
 import lombok.extern.slf4j.Slf4j;

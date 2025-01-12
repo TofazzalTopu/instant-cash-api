@@ -3,7 +3,7 @@ package com.info.api.mapper;
 import com.info.api.constants.RemittanceDataStatus;
 import com.info.api.entity.ApiTrace;
 import com.info.api.entity.ICCashRemittanceData;
-import com.info.api.dto.instantCash.ICOutstandingTransactionDTO;
+import com.info.api.dto.ic.ICOutstandingTransactionDTO;
 import com.info.api.dto.SearchApiResponse;
 import com.info.api.service.common.CommonService;
 import com.info.api.util.Constants;

@@ -1,4 +1,4 @@
-package com.info.api.service.instantCash;
+package com.info.api.service.ic;
 
 import com.info.api.entity.ICCashRemittanceData;
 

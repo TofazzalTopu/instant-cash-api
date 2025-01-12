@@ -2,9 +2,9 @@ package com.info.api.controller;
 
 import com.info.api.dto.ApiResponse;
 import com.info.api.service.common.CommonService;
-import com.info.api.service.instantCash.ICPaymentReceiveService;
-import com.info.api.service.instantCash.ICRetrievePaymentStatusService;
-import com.info.api.service.instantCash.ICUnlockRemittanceService;
+import com.info.api.service.ic.ICPaymentReceiveService;
+import com.info.api.service.ic.ICRetrievePaymentStatusService;
+import com.info.api.service.ic.ICUnlockRemittanceService;
 import com.info.api.util.ApiUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

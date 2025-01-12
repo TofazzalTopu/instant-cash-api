@@ -1,4 +1,4 @@
-package com.info.api.dto.instantCash;
+package com.info.api.dto.ic;
 
 
 import lombok.Data;

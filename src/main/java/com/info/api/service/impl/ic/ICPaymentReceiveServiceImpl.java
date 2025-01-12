@@ -1,15 +1,15 @@
-package com.info.api.service.impl.instantCash;
+package com.info.api.service.impl.ic;
 
 import com.info.api.entity.ApiTrace;
 import com.info.api.entity.ICCashRemittanceData;
 import com.info.api.mapper.ICPaymentReceiveRemittanceMapper;
-import com.info.api.dto.instantCash.ICExchangePropertyDTO;
-import com.info.api.dto.instantCash.ICOutstandingTransactionDTO;
+import com.info.api.dto.ic.ICExchangePropertyDTO;
+import com.info.api.dto.ic.ICOutstandingTransactionDTO;
 import com.info.api.dto.SearchApiResponse;
 import com.info.api.service.common.ApiTraceService;
 import com.info.api.service.common.CommonService;
-import com.info.api.service.instantCash.ICCashRemittanceDataService;
-import com.info.api.service.instantCash.ICPaymentReceiveService;
+import com.info.api.service.ic.ICCashRemittanceDataService;
+import com.info.api.service.ic.ICPaymentReceiveService;
 import com.info.api.util.ApiUtil;
 import com.info.api.util.Constants;
 import com.info.api.util.ObjectConverter;
