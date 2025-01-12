@@ -205,9 +205,10 @@ public class TestUtility {
     private static final String OUTPUT_FORMAT = "%-20s:%s";
 
     private static byte[] digest(byte[] input) {
+        final String MD5 = "MD5";
         MessageDigest md;
         try {
-            md = MessageDigest.getInstance("MD5");
+            md = MessageDigest.getInstance(MD5);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalArgumentException(e);
         }
