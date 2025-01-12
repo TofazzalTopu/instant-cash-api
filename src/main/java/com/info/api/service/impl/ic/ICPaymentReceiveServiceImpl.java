@@ -117,13 +117,13 @@ public class ICPaymentReceiveServiceImpl implements ICPaymentReceiveService {
         apiTrace.setResponseMsg(response);
         apiTrace.setCorrelationId(uuid);
         apiTraceService.save(apiTrace);
-        logger.info("paymentReceive successful for ReferenceNo: {} uuid: {} ", maskSensitiveData(referenceNo), maskSensitiveData(uuid));
+        logger.info("paymentReceive successful for ReferenceNo: [PROTECTED] uuid: [PROTECTED]");
         return searchApiResponse;
     }
 
     private String maskSensitiveData(String data) {
-        if (data == null || data.length() <= 4) {
-            return "[PROTECTED]";
+        if (Objects.isNull(data)) {
+            return "";
         }
         return data.substring(0, 2) + "****" + data.substring(data.length() - 2);
     }
