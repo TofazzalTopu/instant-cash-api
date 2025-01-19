@@ -16,5 +16,4 @@ public interface CommonService {
     void verifyAuthorization(String userId, String password);
 
 
-    List<RemittanceData> getRemittanceDataForNotification(String exchangeCode);
 }

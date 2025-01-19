@@ -2,8 +2,6 @@ package com.info.api.service.impl.common;
 
 import com.info.api.entity.RemittanceData;
 import com.info.api.entity.RemittanceProcessMaster;
-import com.info.api.repository.CommonRepository;
-import com.info.api.service.common.ApiTraceService;
 import com.info.api.service.common.RemittanceDataService;
 import com.info.api.service.common.RemittanceProcessMasterService;
 import org.springframework.context.annotation.Lazy;
@@ -17,16 +15,11 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class RemittanceDataProcessServiceImpl {
 
-    private final ApiTraceService apiTraceService;
-    private final CommonRepository commonRepository;
-
     private final RemittanceDataService remittanceDataService;
 
     private final RemittanceProcessMasterService remittanceProcessMasterService;
 
-    public RemittanceDataProcessServiceImpl(ApiTraceService apiTraceService, CommonRepository commonRepository, @Lazy RemittanceDataService remittanceDataService, RemittanceProcessMasterService remittanceProcessMasterService) {
-        this.apiTraceService = apiTraceService;
-        this.commonRepository = commonRepository;
+    public RemittanceDataProcessServiceImpl(@Lazy RemittanceDataService remittanceDataService, RemittanceProcessMasterService remittanceProcessMasterService) {
         this.remittanceDataService = remittanceDataService;
         this.remittanceProcessMasterService = remittanceProcessMasterService;
     }
@@ -37,8 +30,7 @@ public class RemittanceDataProcessServiceImpl {
         List<RemittanceData> remittanceDataArrayList = new ArrayList<>();
         if (!remittanceDataList.isEmpty()) {
             RemittanceProcessMaster master = null;
-            RemittanceProcessMaster masterRecord = commonRepository.getRemitProcMasterByApiData(remittanceDataList.get(0).getProcessDate(),
-                    exchangeCode, 1, "OPEN");
+            RemittanceProcessMaster masterRecord = remittanceProcessMasterService.findFirstByProcessDateAndExchangeHouseCodeAndApiDataAndProcessStatus(remittanceDataList.get(0).getProcessDate(), exchangeCode, 1, "OPEN");
 
             if (masterRecord != null) {
                 master = masterRecord;
