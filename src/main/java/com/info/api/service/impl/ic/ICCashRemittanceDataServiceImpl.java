@@ -26,7 +26,7 @@ public class ICCashRemittanceDataServiceImpl implements ICCashRemittanceDataServ
 
     @Override
     public Optional<ICCashRemittanceData> findByExchangeCodeAndReferenceNo(String exchangeCode, String referenceNo) {
-        return icCashRemittanceDataRepository.findByExchangeCodeAndReferenceNo(exchangeCode, referenceNo);
+        return icCashRemittanceDataRepository.findFirstByExchangeCodeAndReferenceNo(exchangeCode, referenceNo);
     }
 
     @Override

@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface ICCashRemittanceDataRepository extends JpaRepository<ICCashRemittanceData, Long> {
     Optional<ICCashRemittanceData> findByExchangeCodeAndReferenceNoAndMiddlewarePushAndProcessStatus(String exchangeCode, String referenceNo, Integer middlewarePush, String processStatus);
 
-    Optional<ICCashRemittanceData> findByExchangeCodeAndReferenceNo(String exchangeCode, String referenceNo);
+    Optional<ICCashRemittanceData> findFirstByExchangeCodeAndReferenceNo(String exchangeCode, String referenceNo);
 }

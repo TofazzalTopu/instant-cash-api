@@ -1,10 +1,10 @@
 package com.info.api.service.impl.ic;
 
 import com.info.api.constants.Constants;
-import com.info.api.entity.ApiTrace;
 import com.info.api.dto.ic.APIResponse;
 import com.info.api.dto.ic.ICExchangePropertyDTO;
 import com.info.api.dto.ic.ICPaymentStatusDTO;
+import com.info.api.entity.ApiTrace;
 import com.info.api.service.common.ApiTraceService;
 import com.info.api.service.ic.ICRetrievePaymentStatusService;
 import com.info.api.util.ApiUtil;
@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Objects;
@@ -44,9 +45,9 @@ public class ICRetrievePaymentStatusServiceImpl implements ICRetrievePaymentStat
 
         final ApiTrace apiTrace = apiTraceService.create(dto.getExchangeCode(), Constants.RETRIEVE_PAYMENT_STATUS, null);
         try {
-            if (Objects.isNull(apiTrace)) {
-                return createErrorResponse(apiResponse, Constants.ERROR_CREATING_API_TRACE);
-            }
+            if (Objects.isNull(apiTrace)) return createErrorResponse(apiResponse, Constants.ERROR_CREATING_API_TRACE);
+            logger.info("\ngetPaymentStatus remittance for referenceNo={}, exchangeCode={}, apiTraceID: {}", referenceNo, dto.getExchangeCode(), apiTrace.getId());
+
             String paymentStatusUrl = dto.getStatusUrl() + "?reference=" + referenceNo;
             logger.info("getPaymentStatus paymentStatusUrl GET: {}", paymentStatusUrl);
             ResponseEntity<ICPaymentStatusDTO> responseEntity = restTemplate.exchange(paymentStatusUrl, HttpMethod.GET,
@@ -56,16 +57,18 @@ public class ICRetrievePaymentStatusServiceImpl implements ICRetrievePaymentStat
             if ((responseEntity.getStatusCode().equals(HttpStatus.OK)) && responseEntity.hasBody()) {
                 ICPaymentStatusDTO icPaymentStatusDTO = responseEntity.getBody();
                 logger.info("\ngetPaymentStatus Response data: {}", responseEntity.getBody());
-                apiResponse.setData(convertObjectToString(icPaymentStatusDTO));
+                response = convertObjectToString(icPaymentStatusDTO);
                 apiResponse.setApiStatus(Constants.API_STATUS_VALID);
-                response = convertObjectToString(responseEntity.getBody());
+                apiResponse.setData(response);
             }
+        } catch (HttpStatusCodeException e) {
+            response = e.getMessage();
+            mapAPIErrorResponse(apiResponse, referenceNo, e.getResponseBodyAsString());
         } catch (Exception e) {
+            response = e.getMessage();
             mapAPIErrorResponse(apiResponse, referenceNo, e.getMessage());
-            logger.error("Error in getPaymentStatus() for ReferenceNo: {}", referenceNo, e);
         }
         apiTraceService.saveApiTrace(apiTrace, referenceNo, response, apiResponse.getApiStatus());
-        logger.info("getPaymentStatus retrieved successfully for ReferenceNo: {}, apiTraceID: {}", referenceNo, apiTrace.getId());
 
         return apiResponse;
     }

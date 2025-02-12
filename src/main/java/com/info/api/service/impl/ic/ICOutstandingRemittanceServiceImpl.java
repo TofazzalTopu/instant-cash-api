@@ -1,14 +1,14 @@
 package com.info.api.service.impl.ic;
 
 import com.info.api.constants.Constants;
+import com.info.api.dto.ic.ICExchangePropertyDTO;
+import com.info.api.dto.ic.ICOutstandingRemittanceDTO;
+import com.info.api.dto.ic.ICOutstandingTransactionDTO;
 import com.info.api.entity.ApiTrace;
 import com.info.api.entity.Branch;
 import com.info.api.entity.MbkBrn;
 import com.info.api.entity.RemittanceData;
 import com.info.api.mapper.ICOutstandingRemittanceMapper;
-import com.info.api.dto.ic.ICExchangePropertyDTO;
-import com.info.api.dto.ic.ICOutstandingRemittanceDTO;
-import com.info.api.dto.ic.ICOutstandingTransactionDTO;
 import com.info.api.service.common.*;
 import com.info.api.service.ic.ICOutstandingRemittanceService;
 import com.info.api.util.ApiUtil;
@@ -23,9 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -82,6 +79,7 @@ public class ICOutstandingRemittanceServiceImpl implements ICOutstandingRemittan
     }
 
     private List<RemittanceData> prepareAndProcessOutstandingRemittance(List<ICOutstandingTransactionDTO> transactionDTOArrayList, String exchangeCode, ApiTrace trace) {
+        logger.info("\ntransactionDTOArrayList: {} ", transactionDTOArrayList);
         List<String> branchRoutings = RemittanceValidator.getBranchRoutingNumbers(transactionDTOArrayList);
         List<Integer> routingNumbers = branchRoutings.stream().map(Integer::valueOf).collect(Collectors.toList());
         logger.info("branchRoutings: {} ", branchRoutings);
@@ -90,36 +88,40 @@ public class ICOutstandingRemittanceServiceImpl implements ICOutstandingRemittan
         Map<String, MbkBrn> mbkBrnMap = mbkBrnService.findAllByMbkbrnKeyBranchRoutingIn(branchRoutings).stream().distinct().collect(Collectors.toMap(m -> m.getMbkbrnKey().getBranchRouting(), Function.identity(), (existing, replacement) -> existing));
         logger.info("branchMap: {} ", branchMap);
         logger.info("mbkBrnMap: {} ", mbkBrnMap);
-        logger.info("\ntransactionDTOArrayList: {} ", convertObjectToString(transactionDTOArrayList));
 
         List<String> references = transactionDTOArrayList.stream().map(ICOutstandingTransactionDTO::getReference).distinct().collect(Collectors.toList());
-        List<String> existingReferences = remittanceDataService.findAllByExchangeCodeAndReferenceNumbers(exchangeCode, references);
+        List<String> existingReferences = getExistingReferences(exchangeCode, references);
         logger.info("existingReferences: {} ", existingReferences);
-        Predicate<RemittanceData> isDuplicateOrRejected = remittanceData -> remittanceData.isDuplicate() || remittanceData.getProcessStatus().equals(RemittanceData.REJECTED);
 
         List<RemittanceData> remittanceList = transactionDTOArrayList.stream().map(e -> mapDuplicate(e, existingReferences)).map(dto -> icRemittanceMapper.prepareRemittanceData(dto, exchangeCode, trace, branchMap, mbkBrnMap)).collect(Collectors.toList());
 
-        List<RemittanceData> validRemittanceList = remittanceList.stream().filter(isDuplicateOrRejected.negate()).distinct().collect(Collectors.toList());
-
-        logger.info("\nvalidRemittanceList:  ");
-        validRemittanceList.stream().map(RemittanceData::getReferenceNo).forEach(System.out::println);
+        List<RemittanceData> validRemittanceList = filterValidRemittances(remittanceList);
 
         remittanceProcessService.processAndSaveRemittanceData(validRemittanceList, exchangeCode, Constants.EXCHANGE_HOUSE_INSTANT_CASH);
         logger.info("Total Records: {} ", remittanceList.size());
         return remittanceList;
     }
 
+    private List<String> getExistingReferences(String exchangeCode, List<String> references) {
+        return remittanceDataService.findAllByExchangeCodeAndReferenceNumbers(exchangeCode, references);
+    }
+
+    private List<RemittanceData> filterValidRemittances(List<RemittanceData> remittanceList) {
+        Predicate<RemittanceData> isDuplicateOrRejected = remittanceData -> remittanceData.isDuplicate() || remittanceData.getProcessStatus().equals(RemittanceData.REJECTED);
+        return remittanceList.stream().filter(isDuplicateOrRejected.negate()).distinct().collect(Collectors.toList());
+    }
+
     private ICOutstandingTransactionDTO mapDuplicate(ICOutstandingTransactionDTO dto, List<String> existingReferences) {
         if (existingReferences.contains(dto.getReference())) {
             dto.setDuplicate(true);
             dto.setProcessStatus(RemittanceData.REJECTED);
-            dto.setReasonForInvalid("Reference already exist");
+            dto.setReasonForInvalid(Constants.REFERENCE_NO_ALREADY_EXIST);
         }
         return dto;
     }
 
     private ResponseEntity<ICOutstandingRemittanceDTO> sendICOutstandingRemittanceDownloadRequest(ICExchangePropertyDTO icDTO, Long apiTraceId) {
-        String outstandingUrl = icDTO.getOutstandingUrl() + "?pageNumber=1&pageSize=100";
+        String outstandingUrl = icDTO.getOutstandingUrl() + "?pageNumber=1&pageSize=1000";
         HttpEntity<String> httpEntity = ApiUtil.createHttpEntity("", apiTraceId, icDTO);
         logger.info("ICOutstandingRemittance httpEntity: \n {}, \n OutstandingRequest URL: {}\n", convertObjectToString(httpEntity), outstandingUrl);
         return restTemplate.exchange(outstandingUrl, HttpMethod.GET, httpEntity, ICOutstandingRemittanceDTO.class);

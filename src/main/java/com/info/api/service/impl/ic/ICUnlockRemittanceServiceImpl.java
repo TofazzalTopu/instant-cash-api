@@ -59,10 +59,7 @@ public class ICUnlockRemittanceServiceImpl implements ICUnlockRemittanceService 
             return createErrorResponse(apiResponse, Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_UNLOCK_REMITTANCE);
         }
         Optional<RemittanceData> remittanceDataOptional = remittanceDataService.findByExchangeCodeAndReferenceNoAndProcessStatusesIsNot(dto.getExchangeCode(), referenceNo, Arrays.asList(RemittanceData.COMPLETED, RemittanceData.UNLOCK));
-        if (!remittanceDataOptional.isPresent()) {
-            apiResponse.setErrorMessage(Constants.REFERENCE_NOT_EXIST);
-            return apiResponse;
-        }
+        if (remittanceDataOptional.isEmpty()) return createErrorResponse(apiResponse, Constants.REFERENCE_NOT_EXIST);
 
         final ApiTrace apiTrace = apiTraceService.create(dto.getExchangeCode(), Constants.UNLOCK_TRANSACTION, null);
         if (Objects.isNull(apiTrace)) return createErrorResponse(apiResponse, Constants.ERROR_CREATING_API_TRACE);
@@ -93,8 +90,8 @@ public class ICUnlockRemittanceServiceImpl implements ICUnlockRemittanceService 
         }
         apiTraceService.saveApiTrace(apiTrace, referenceNo, response, apiTrace.getStatus());
         apiResponse.setData(response);
-        apiResponse.setErrorMessage(response);
         apiResponse.setApiStatus(apiTrace.getStatus());
+        if(!apiTrace.getStatus().equals(Constants.API_STATUS_VALID)) apiResponse.setErrorMessage(response);
         return apiResponse;
     }
 
