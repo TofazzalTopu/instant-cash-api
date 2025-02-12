@@ -1,6 +1,5 @@
 package com.info.api.service.impl.common;
 
-import com.info.api.entity.RemittanceData;
 import com.info.api.repository.CommonRepository;
 import com.info.api.service.common.CommonService;
 import com.info.api.util.DateUtil;
@@ -11,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -55,9 +53,5 @@ public class CommonServiceImpl implements CommonService {
         }
     }
 
-    @Override
-    public List<RemittanceData> getRemittanceDataForNotification(String exchangeCode) {
-        return commonRepository.getRemittanceDataForNotification(exchangeCode);
-    }
 
 }

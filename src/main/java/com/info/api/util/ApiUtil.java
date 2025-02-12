@@ -1,7 +1,7 @@
 package com.info.api.util;
 
 import com.info.api.entity.ExchangeHouseProperty;
-import com.info.api.dto.instantCash.ICExchangePropertyDTO;
+import com.info.api.dto.ic.ICExchangePropertyDTO;
 import com.info.api.service.common.LoadExchangeHouseProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

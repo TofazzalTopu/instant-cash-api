@@ -195,7 +195,7 @@ public class ApiTraceServiceImpl implements ApiTraceService {
         try {
             traceList = apiTraceRepository.saveAll(apiTraceList);
         } catch (Exception e) {
-            logger.error("Error in save saveAllApiTrace() = " + e);
+            logger.error("Error in save saveAllApiTrace(): {} ", e.getMessage());
         }
         return traceList;
     }
@@ -249,7 +249,7 @@ public class ApiTraceServiceImpl implements ApiTraceService {
             }
             trace.setStatus(status);
         } catch (Exception e) {
-            logger.error("Error occurred on processConfirmedRemittanceData buildApiTrace", e);
+            logger.error("Error occurred on processConfirmedRemittanceData buildApiTrace: {}", e.getMessage());
         }
         return trace;
     }
@@ -267,7 +267,7 @@ public class ApiTraceServiceImpl implements ApiTraceService {
             if (Objects.nonNull(correlationId)) apiTrace.setCorrelationId(correlationId);
             return apiTraceRepository.save(apiTrace);
         } catch (Exception e) {
-            logger.error("Error occurred on saveApiTrace", e);
+            logger.error("Error occurred on saveApiTrace: {}", e.getMessage());
         }
         return null;
     }
