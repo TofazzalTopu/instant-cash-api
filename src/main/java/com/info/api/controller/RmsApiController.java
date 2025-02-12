@@ -32,7 +32,7 @@ public class RmsApiController {
     }
 
     @GetMapping(value = "/transaction-report")
-    public ResponseEntity<APIResponse> transactionReport(@RequestHeader @NotNull String userId, @RequestHeader @NotNull String password,
+    public ResponseEntity<String> transactionReport(@RequestHeader @NotNull String userId, @RequestHeader @NotNull String password,
                                                          @RequestParam @NotNull String exchcode, @RequestParam @NotNull String fromDate,
                                                          @RequestParam @NotNull String toDate, @RequestParam int pageNumber, @RequestParam int pageSize, HttpServletRequest request) {
         TransactionReportRequestBody report = new TransactionReportRequestBody(userId, password, null, null, exchcode, fromDate, toDate, pageNumber, pageSize);

@@ -8,7 +8,6 @@ import com.info.api.dto.ic.ICPaymentStatusDTO;
 import com.info.api.service.common.ApiTraceService;
 import com.info.api.service.ic.ICRetrievePaymentStatusService;
 import com.info.api.util.ApiUtil;
-import com.info.api.util.ResponseUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Objects;
 
 import static com.info.api.util.ObjectConverter.convertObjectToString;
+import static com.info.api.util.ResponseUtil.createErrorResponse;
 import static com.info.api.util.ResponseUtil.mapAPIErrorResponse;
 
 @Service
@@ -34,9 +34,9 @@ public class ICRetrievePaymentStatusServiceImpl implements ICRetrievePaymentStat
     private final ApiTraceService apiTraceService;
 
     @Override
-    public APIResponse<?> getPaymentStatus(ICExchangePropertyDTO dto, String referenceNo) {
+    public APIResponse<String> getPaymentStatus(ICExchangePropertyDTO dto, String referenceNo) {
         String response = "";
-        APIResponse apiResponse = new APIResponse();
+        APIResponse<String> apiResponse = new APIResponse<>();
 
         if (ApiUtil.validateIsICPropertiesIsNotExist(dto, dto.getStatusUrl())) {
             return mapAPIErrorResponse(apiResponse, referenceNo, Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_RETRIEVE_PAYMENT_STATUS);
@@ -44,9 +44,9 @@ public class ICRetrievePaymentStatusServiceImpl implements ICRetrievePaymentStat
 
         final ApiTrace apiTrace = apiTraceService.create(dto.getExchangeCode(), Constants.RETRIEVE_PAYMENT_STATUS, null);
         try {
-            if (Objects.isNull(apiTrace))
-                return ResponseUtil.createErrorResponse(apiResponse, Constants.ERROR_CREATING_API_TRACE);
-
+            if (Objects.isNull(apiTrace)) {
+                return createErrorResponse(apiResponse, Constants.ERROR_CREATING_API_TRACE);
+            }
             String paymentStatusUrl = dto.getStatusUrl() + "?reference=" + referenceNo;
             logger.info("getPaymentStatus paymentStatusUrl GET: {}", paymentStatusUrl);
             ResponseEntity<ICPaymentStatusDTO> responseEntity = restTemplate.exchange(paymentStatusUrl, HttpMethod.GET,
@@ -56,7 +56,7 @@ public class ICRetrievePaymentStatusServiceImpl implements ICRetrievePaymentStat
             if ((responseEntity.getStatusCode().equals(HttpStatus.OK)) && responseEntity.hasBody()) {
                 ICPaymentStatusDTO icPaymentStatusDTO = responseEntity.getBody();
                 logger.info("\ngetPaymentStatus Response data: {}", responseEntity.getBody());
-                apiResponse.setData(icPaymentStatusDTO);
+                apiResponse.setData(convertObjectToString(icPaymentStatusDTO));
                 apiResponse.setApiStatus(Constants.API_STATUS_VALID);
                 response = convertObjectToString(responseEntity.getBody());
             }

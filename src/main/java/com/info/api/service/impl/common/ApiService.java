@@ -38,6 +38,7 @@ public class ApiService {
     private final ICConfirmTransactionStatusService icConfirmTransactionStatusService;
 
     private static final String X_FORWARDED_FOR = "X-FORWARDED-FOR";
+    protected ICExchangePropertyDTO icExchangeProperties = ApiUtil.getICExchangeProperties();
 
     @Value("${INSTANT_CASH_API_USER_ID}")
     String icUserId;
@@ -51,7 +52,6 @@ public class ApiService {
             if (isNullOrEmpty(apiRequest.getBruserid()) || isNullOrEmpty(apiRequest.getBrcode()) || isNullOrEmpty(apiRequest.getExchcode()) || isNullOrEmpty(apiRequest.getPinno())) {
                 searchApiResponse.setErrorMessage(buildErrorMessage(apiRequest));
             } else {
-                ICExchangePropertyDTO icExchangeProperties = ApiUtil.getICExchangeProperties();
                 if (icExchangeProperties.getExchangeCode().equals(apiRequest.getExchcode())) {
                     searchApiResponse = icPaymentReceiveService.paymentReceive(icExchangeProperties, apiRequest);
                 } else {
@@ -76,7 +76,6 @@ public class ApiService {
         if (!isValidPaymentRequest(paymentApiRequest)) {
             paymentApiResponse = mapPaymentApiResponse(paymentApiResponse, paymentApiRequest);
         } else {
-            ICExchangePropertyDTO icExchangeProperties = ApiUtil.getICExchangeProperties();
             if (icExchangeProperties.getExchangeCode().equals(paymentApiRequest.getExchCode())) {
                 paymentApiResponse = icConfirmTransactionStatusService.confirmCahTransactionPayment(paymentApiResponse, paymentApiRequest, icExchangeProperties);
             } else {
@@ -87,25 +86,23 @@ public class ApiService {
         return convertObjectToString(paymentApiResponse);
     }
 
-    public APIResponse<Object> fetchTransactionReport(TransactionReportRequestBody report) {
+    public String fetchTransactionReport(TransactionReportRequestBody report) {
         logger.info("Enter into ApiService: payRemittance()");
         APIResponse<Object> apiResponse = new APIResponse<>();
         logger.info("\nRequestBody from CBS =================> \n{} ", report);
-        if (!isValidICTransactionReportBody(report)) return mapInvalidParameters(apiResponse);
+        if (!isValidICTransactionReportBody(report)) return convertObjectToString(mapInvalidParameters(apiResponse));
 
-        ICExchangePropertyDTO icExchangeProperties = ApiUtil.getICExchangeProperties();
         if (icExchangeProperties.getExchangeCode().equals(report.getExchcode())) {
             icExchangeProperties.setPassword(generateBase64Hash(icUserId, icPassword));
             apiResponse = icTransactionReportService.fetchICTransactionReport(icExchangeProperties, report);
         }
 
-        return apiResponse;
+        return convertObjectToString(apiResponse);
     }
 
-    public APIResponse<Object> getPaymentStatus(String exchcode, String reference) {
-        APIResponse<Object> apiResponse = new APIResponse<>();
+    public APIResponse<String> getPaymentStatus(String exchcode, String reference) {
+        APIResponse<String> apiResponse = new APIResponse<>();
         apiResponse.setApiStatus(Constants.API_STATUS_VALID);
-        ICExchangePropertyDTO icExchangeProperties = ApiUtil.getICExchangeProperties();
         if (icExchangeProperties.getExchangeCode().equals(exchcode)) {
             icExchangeProperties.setPassword(generateBase64Hash(icUserId, icPassword));
             apiResponse = icRetrievePaymentStatusService.getPaymentStatus(icExchangeProperties, reference);

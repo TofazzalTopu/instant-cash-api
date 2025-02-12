@@ -20,12 +20,13 @@ public class InstantCashController {
     private final ICUnlockRemittanceService icUnlockRemittanceService;
 
     @GetMapping(value = "/paymentStatus")
-    public ResponseEntity<APIResponse> getPaymentStatus(@RequestHeader @NotNull String userId, @RequestHeader @NotNull String password, @RequestParam("exchcode") String exchcode, @RequestParam @NotNull String reference) {
+    public ResponseEntity<APIResponse<String>> getPaymentStatus(@RequestHeader @NotNull String userId, @RequestHeader @NotNull String password,
+                                                           @RequestParam String exchcode, @RequestParam @NotNull String reference) {
         return ResponseEntity.ok().body(apiService.getPaymentStatus(exchcode, reference));
     }
 
     @PostMapping(value = "/unlock")
-    public ResponseEntity<APIResponse> unlockRemittance(@RequestHeader String userId, @RequestHeader String password, @RequestParam String reference) {
+    public ResponseEntity<APIResponse<String>> unlockRemittance(@RequestHeader String userId, @RequestHeader String password, @RequestParam String reference) {
         return ResponseEntity.ok().body(icUnlockRemittanceService.unlockICOutstandingRemittance(reference, ApiUtil.getICExchangeProperties()));
     }
 

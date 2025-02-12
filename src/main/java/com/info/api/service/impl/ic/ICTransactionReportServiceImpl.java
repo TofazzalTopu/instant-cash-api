@@ -61,7 +61,7 @@ public class ICTransactionReportServiceImpl implements ICTransactionReportServic
                 apiResponse.setData(transactionDTOArrayList);
             }
             if (ParseUtil.isNotNullAndNotEmptyList(transactionDTOArrayList)) {
-                return deleteTraceAndCreateErrorResponse(apiResponse, Constants.NO_RECORD_FOUND, trace);
+                return deleteTraceAndCreateErrorResponse(apiResponse, trace);
             }
         } catch (Exception e) {
             response = e.getMessage();
@@ -72,9 +72,9 @@ public class ICTransactionReportServiceImpl implements ICTransactionReportServic
         return apiResponse;
     }
 
-    private APIResponse deleteTraceAndCreateErrorResponse(APIResponse apiResponse, String errorMessage, ApiTrace trace) {
+    private APIResponse<List<ICTransactionReportDTO>> deleteTraceAndCreateErrorResponse(APIResponse<List<ICTransactionReportDTO>> apiResponse, ApiTrace trace) {
         logger.info(Constants.TRACING_REMOVED_BECAUSE_NO_RECORD_FOUND_TRACE_ID, "fetchICTransactionReport()", trace.getId());
-        apiResponse.setErrorMessage(errorMessage);
+        apiResponse.setErrorMessage(Constants.NO_RECORD_FOUND);
         apiTraceService.deleteById(trace.getId());
         return apiResponse;
     }

@@ -50,9 +50,9 @@ public class ICUnlockRemittanceServiceImpl implements ICUnlockRemittanceService 
     String icPassword;
 
     @Override
-    public APIResponse unlockICOutstandingRemittance(String referenceNo, ICExchangePropertyDTO dto) {
+    public APIResponse<String> unlockICOutstandingRemittance(String referenceNo, ICExchangePropertyDTO dto) {
         String response = "";
-        APIResponse apiResponse = new APIResponse();
+        APIResponse<String> apiResponse = new APIResponse<>();
         dto.setPassword(generateBase64Hash(icUserId, icPassword));
 
         if (ApiUtil.validateIsICPropertiesIsNotExist(dto, dto.getUnlockUrl())) {
@@ -86,15 +86,14 @@ public class ICUnlockRemittanceServiceImpl implements ICUnlockRemittanceService 
         } catch (HttpStatusCodeException e) {
             apiTrace.setStatus(Constants.API_STATUS_ERROR);
             response = updateRemittanceAndMapErrorResponse(e, remittanceDataOptional.get());
-            apiResponse.setErrorMessage(response);
         } catch (Exception e) {
             response = e.getMessage();
-            apiResponse.setErrorMessage(response);
             apiTrace.setStatus(Constants.API_STATUS_ERROR);
             logger.error("Error in unlockICOutstandingRemittance for TraceID: {}, Message: {}", apiTrace.getId(), e.getMessage());
         }
         apiTraceService.saveApiTrace(apiTrace, referenceNo, response, apiTrace.getStatus());
-        if (apiTrace.getStatus().equals(Constants.API_STATUS_VALID)) apiResponse.setData(response);
+        apiResponse.setData(response);
+        apiResponse.setErrorMessage(response);
         apiResponse.setApiStatus(apiTrace.getStatus());
         return apiResponse;
     }

@@ -12,7 +12,7 @@ public class ResponseUtil {
     private ResponseUtil() {
     }
 
-    public static APIResponse createErrorResponse(APIResponse apiResponse, String errorMessage) {
+    public static <T> APIResponse<T> createErrorResponse(APIResponse<T> apiResponse, String errorMessage) {
         logger.error("errorMessage: {}", errorMessage);
         apiResponse.setErrorMessage(errorMessage);
         apiResponse.setApiStatus(Constants.API_STATUS_ERROR);
@@ -27,7 +27,7 @@ public class ResponseUtil {
         return response;
     }
 
-    public static APIResponse mapAPIErrorResponse(APIResponse apiResponse, String referenceNo, String errorMessage) {
+    public static <T> APIResponse<T> mapAPIErrorResponse(APIResponse<T> apiResponse, String referenceNo, String errorMessage) {
         logger.error("referenceNo: {}, errorMessage: {}", referenceNo, errorMessage);
         apiResponse.setErrorMessage(errorMessage);
         apiResponse.setApiStatus(Constants.API_STATUS_ERROR);
