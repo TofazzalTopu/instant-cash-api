@@ -8,10 +8,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
+@Validated
 @CrossOrigin
 @RestController
 @RequiredArgsConstructor
@@ -24,8 +26,8 @@ public class InstantCashController {
 
     @Operation(description = "Check payment status by exchange code and reference PIN.")
     @GetMapping(value = "/paymentStatus")
-    public ResponseEntity<APIResponse<String>> getPaymentStatus(@RequestHeader @NotNull String userId, @RequestHeader @NotNull String password,
-                                                                @RequestParam String exchcode, @RequestParam @NotNull String reference) {
+    public ResponseEntity<APIResponse<String>> getPaymentStatus(@RequestHeader @NotBlank String userId, @RequestHeader @NotBlank String password,
+                                                                @RequestParam String exchcode, @RequestParam @NotBlank String reference) {
         return ResponseEntity.ok().body(apiService.getPaymentStatus(exchcode, reference));
     }
 

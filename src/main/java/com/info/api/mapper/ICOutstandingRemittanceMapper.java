@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import static com.info.api.util.ParseUtil.isNotNullAndNotEmpty;
+import static com.info.api.util.ParseUtil.isNotBlankAndNotEmpty;
 
 @Component
 public class ICOutstandingRemittanceMapper {
@@ -41,7 +41,7 @@ public class ICOutstandingRemittanceMapper {
                 remittanceData.setProcessStatus(RemittanceData.OPEN);
             }
 
-            remittanceData.setAmount(isNotNullAndNotEmpty(icOutstandingDTO.getPayingAmount()) ? icOutstandingDTO.getPayingAmount() : icOutstandingDTO.getSettlementAmount());
+            remittanceData.setAmount(isNotBlankAndNotEmpty(icOutstandingDTO.getPayingAmount()) ? icOutstandingDTO.getPayingAmount() : icOutstandingDTO.getSettlementAmount());
             remittanceData.setAmountOriginate(icOutstandingDTO.getSettlementAmount());
             remittanceData.setPaidBy(icOutstandingDTO.getPayingAgentName());
             remittanceData.setCharges(icOutstandingDTO.getCommissionAmount());
@@ -76,7 +76,7 @@ public class ICOutstandingRemittanceMapper {
 
     private void mapBeneficiaryInfo(RemittanceData remittanceData, ICOutstandingTransactionDTO icOutstandingDTO) {
         try {
-            if (isNotNullAndNotEmpty(icOutstandingDTO.getBeneficiary())) {
+            if (isNotBlankAndNotEmpty(icOutstandingDTO.getBeneficiary())) {
                 String beneficiaryFirstName = Objects.nonNull(icOutstandingDTO.getBeneficiary().getFirstName()) ? icOutstandingDTO.getBeneficiary().getFirstName() : "";
                 String beneficiaryMiddleName = Objects.nonNull(icOutstandingDTO.getBeneficiary().getMiddleName()) ? icOutstandingDTO.getBeneficiary().getMiddleName() : "";
                 String beneficiaryLastName = Objects.nonNull(icOutstandingDTO.getBeneficiary().getLastName()) ? icOutstandingDTO.getBeneficiary().getLastName() : "";
@@ -85,7 +85,7 @@ public class ICOutstandingRemittanceMapper {
                 String beneficiaryPhoneNo = Objects.nonNull(icOutstandingDTO.getBeneficiary().getPhoneNumber()) ? icOutstandingDTO.getBeneficiary().getPhoneNumber() : icOutstandingDTO.getBeneficiary().getMobileNumber();
                 remittanceData.setPhoneNo(beneficiaryPhoneNo);
 
-                if (isNotNullAndNotEmpty(icOutstandingDTO.getBeneficiary().getAddress())) {
+                if (isNotBlankAndNotEmpty(icOutstandingDTO.getBeneficiary().getAddress())) {
                     String city = Objects.nonNull(icOutstandingDTO.getBeneficiary().getAddress().getCity()) ? icOutstandingDTO.getBeneficiary().getAddress().getCity() : "";
                     String district = Objects.nonNull(icOutstandingDTO.getBeneficiary().getAddress().getDistrict()) ? icOutstandingDTO.getBeneficiary().getAddress().getDistrict() : "";
                     remittanceData.setCityDistrict(city + " " + district);
@@ -100,20 +100,20 @@ public class ICOutstandingRemittanceMapper {
     }
 
     private void mapRemitterInfo(RemittanceData remittanceData, ICOutstandingTransactionDTO icOutstandingDTO) {
-        if (isNotNullAndNotEmpty(icOutstandingDTO.getRemitter())) {
-            remittanceData.setSenderPhone(isNotNullAndNotEmpty(icOutstandingDTO.getRemitter().getPhoneNumber()) ? icOutstandingDTO.getRemitter().getPhoneNumber() : icOutstandingDTO.getRemitter().getMobileNumber());
+        if (isNotBlankAndNotEmpty(icOutstandingDTO.getRemitter())) {
+            remittanceData.setSenderPhone(isNotBlankAndNotEmpty(icOutstandingDTO.getRemitter().getPhoneNumber()) ? icOutstandingDTO.getRemitter().getPhoneNumber() : icOutstandingDTO.getRemitter().getMobileNumber());
             String senderFirstName = Objects.nonNull(icOutstandingDTO.getRemitter().getFirstName()) ? icOutstandingDTO.getRemitter().getFirstName() : "";
             String senderMiddleName = Objects.nonNull(icOutstandingDTO.getRemitter().getMiddleName()) ? icOutstandingDTO.getRemitter().getMiddleName() : "";
             String senderLastName = Objects.nonNull(icOutstandingDTO.getRemitter().getLastName()) ? icOutstandingDTO.getRemitter().getLastName() : "";
             remittanceData.setSenderName(senderFirstName + " " + senderMiddleName + " " + senderLastName);
 
-            if (isNotNullAndNotEmpty(icOutstandingDTO.getRemitter().getAddress())) {
+            if (isNotBlankAndNotEmpty(icOutstandingDTO.getRemitter().getAddress())) {
                 String address1 = Objects.nonNull(icOutstandingDTO.getRemitter().getAddress().getAddressLine1()) ? icOutstandingDTO.getRemitter().getAddress().getAddressLine1() : "";
                 String address2 = Objects.nonNull(icOutstandingDTO.getRemitter().getAddress().getAddressLine2()) ? icOutstandingDTO.getRemitter().getAddress().getAddressLine2() : "";
                 remittanceData.setSenderAddress(address1 + " " + address2);
             }
 
-            if (isNotNullAndNotEmpty(icOutstandingDTO.getRemitter().getIdDetails())) {
+            if (isNotBlankAndNotEmpty(icOutstandingDTO.getRemitter().getIdDetails())) {
                 remittanceData.setIdNo(icOutstandingDTO.getRemitter().getIdDetails().getNumber());
                 remittanceData.setSenderIdType(icOutstandingDTO.getRemitter().getIdDetails().getType());
             }
@@ -123,7 +123,7 @@ public class ICOutstandingRemittanceMapper {
     // if the first 3 digits of the bankCode is 185 (RUPALI Bank Head Office) then the transaction type is EFT.
     private void mapBankBranchInfo(RemittanceData remittanceData, ICOutstandingTransactionDTO icOutstandingDTO, Map<Integer, Branch> branchMap, Map<String, MbkBrn> mbkBrnMap) {
         try {
-            boolean isBankDetailsNonEmpty = isNotNullAndNotEmpty(icOutstandingDTO.getBeneficiary()) && isNotNullAndNotEmpty(icOutstandingDTO.getBeneficiary().getBankDetails());
+            boolean isBankDetailsNonEmpty = isNotBlankAndNotEmpty(icOutstandingDTO.getBeneficiary()) && isNotBlankAndNotEmpty(icOutstandingDTO.getBeneficiary().getBankDetails());
             ICBankDetailsDTO icBankDetailsDTO = icOutstandingDTO.getBeneficiary().getBankDetails();
             if (isBankDetailsNonEmpty) {
                 String routingNumber = icBankDetailsDTO.getBankCode();
@@ -138,7 +138,7 @@ public class ICOutstandingRemittanceMapper {
                 if (!remittanceData.isDuplicate()) {
                     remittanceData.setProcessStatus(RemittanceData.OPEN);
 
-                    Predicate<String> isValid = routing -> isNotNullAndNotEmpty(routing) && routing.length() > 2 && bankCode.equals(routing.substring(0, 3));
+                    Predicate<String> isValid = routing -> isNotBlankAndNotEmpty(routing) && routing.length() > 2 && bankCode.equals(routing.substring(0, 3));
                     if (isValid.test(routingNumber)) {
                         remittanceData.setRemittanceMessageType(RemittanceData.EFT);
                         remittanceData.setBankCode(bankCode);

@@ -5,32 +5,32 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class RiaExchangePropertyDTO {
 
-    @NotNull
+    @NotBlank
     private String exchangeCode;
-    @NotNull
+    @NotBlank
     private String agentId;
-    @NotNull
+    @NotBlank
     private String ocpApimSubKey;
-    @NotNull
+    @NotBlank
     private String apiVersion;
-    @NotNull
+    @NotBlank
     private String downloadableUrl;
-    @NotNull
+    @NotBlank
     private String searchUrl;
-    @NotNull
+    @NotBlank
     private String paymentUrl;
-    @NotNull
+    @NotBlank
     private String cashPickUpCancelUrl;
-    @NotNull
+    @NotBlank
     private String notifyRemStatusUrl;
-    @NotNull
+    @NotBlank
     private String notifyCancelReqUrl;
 
 }

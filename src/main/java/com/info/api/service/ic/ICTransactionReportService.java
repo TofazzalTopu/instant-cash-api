@@ -4,11 +4,11 @@ import com.info.api.dto.ic.APIResponse;
 import com.info.api.dto.ic.ICExchangePropertyDTO;
 import com.info.api.dto.ic.TransactionReportRequestBody;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 public interface ICTransactionReportService<T> {
 
-    APIResponse<T> fetchICTransactionReport(@NotNull ICExchangePropertyDTO icExchangePropertyDTO, @NotNull TransactionReportRequestBody report);
+    APIResponse<T> fetchICTransactionReport(@NotBlank ICExchangePropertyDTO icExchangePropertyDTO, @NotBlank TransactionReportRequestBody report);
 
 
 }

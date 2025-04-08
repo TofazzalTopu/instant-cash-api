@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 import java.util.Objects;
 
 import static com.info.api.util.ObjectConverter.convertObjectToString;
@@ -54,7 +54,7 @@ public class ICPaymentReceiveServiceImpl implements ICPaymentReceiveService {
     String icPaymentUserId;
 
     @Override
-    public SearchApiResponse paymentReceive(@NotNull ICExchangePropertyDTO dto, SearchApiRequest searchApiRequest) {
+    public SearchApiResponse paymentReceive(@NotBlank ICExchangePropertyDTO dto, SearchApiRequest searchApiRequest) {
         SearchApiResponse searchApiResponse = initializeSearchApiResponse(searchApiRequest, dto);
 
         if (ApiUtil.validateIsICPropertiesIsNotExist(dto, dto.getPaymentReceiveUrl())) {

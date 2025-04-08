@@ -3,7 +3,7 @@ package com.info.api.dto.ic;
 
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @Data
 @Builder
@@ -12,10 +12,10 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class ICConfirmDTO {
 
-    @NotNull
+    @NotBlank
     private String reference;
 
-    @NotNull
+    @NotBlank
     private String newStatus;
 
     private String remarks;

@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @Data
 @ToString
@@ -13,19 +13,19 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class TransactionReportRequestBody {
 
-    @NotNull
+    @NotBlank
     private String userId;
-    @NotNull
+    @NotBlank
     private String password;
-    @NotNull
+    @NotBlank
     private String bruserid;
-    @NotNull
+    @NotBlank
     private String brcode;
-    @NotNull
+    @NotBlank
     private String exchcode;
-    @NotNull
+    @NotBlank
     private String fromDate;
-    @NotNull
+    @NotBlank
     private String toDate;
     private int pageNumber;
     private int pageSize;

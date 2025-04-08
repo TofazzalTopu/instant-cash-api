@@ -1,11 +1,12 @@
 package com.info.api.util;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.info.api.constants.Constants;
 import com.info.api.dto.PaymentApiRequest;
 import com.info.api.dto.PaymentApiResponse;
 import com.info.api.dto.ic.LoginErrorResponse;
 import com.info.api.dto.ic.TransactionReportRequestBody;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,86 +20,19 @@ public class ParseUtil {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
 
     public static PaymentApiRequest parseAndPrepareRequest(String data, String requestIp) {
-        PaymentApiRequest paymentApiRequest = new PaymentApiRequest();
+        PaymentApiRequest paymentApiRequest;
         try {
-            JSONObject json = new JSONObject(data);
-
+            paymentApiRequest = objectMapper.readValue(data, PaymentApiRequest.class);
             paymentApiRequest.setIpAddress(requestIp);
-
-            if (!json.isNull("Address"))
-                paymentApiRequest.setAddress(json.getString("Address"));
-
-            if (!json.isNull("BrCode"))
-                paymentApiRequest.setBrCode(json.getString("BrCode"));
-
-            if (!json.isNull("BrUserId"))
-                paymentApiRequest.setBrUserId(json.getString("BrUserId"));
-
-            if (!json.isNull("City"))
-                paymentApiRequest.setCity(json.getString("City"));
-
-            if (!json.isNull("DOB"))
-                paymentApiRequest.setDob(json.getString("DOB"));
-
-            if (!json.isNull("ExchCode"))
-                paymentApiRequest.setExchCode(json.getString("ExchCode"));
-
-            if (!json.isNull("MobileNo"))
-                paymentApiRequest.setMobileNo(json.getString("MobileNo"));
-
-            if (!json.isNull("BeneIDNumber"))
-                paymentApiRequest.setBeneIDNumber(json.getString("BeneIDNumber"));
-
-            if (!json.isNull("Pinno"))
-                paymentApiRequest.setPinno(json.getString("Pinno"));
-
-            if (!json.isNull("PurposeOfTran"))
-                paymentApiRequest.setPurposeOfTran(json.getString("PurposeOfTran"));
-
-            if (!json.isNull("RelationWithRemitter"))
-                paymentApiRequest.setRelationWithRemitter(json.getString("RelationWithRemitter"));
-
-            if (!json.isNull("TranNo"))
-                paymentApiRequest.setTranNo(json.getString("TranNo"));
-
-            if (!json.isNull("ZipCode"))
-                paymentApiRequest.setZipCode(json.getString("ZipCode"));
-
-            if (!json.isNull("BeneIDType"))
-                paymentApiRequest.setBeneIDType(json.getString("BeneIDType"));
-
-            if (!json.isNull("BeneIDIssuedBy"))
-                paymentApiRequest.setBeneIDIssuedBy(json.getString("BeneIDIssuedBy"));
-
-            if (!json.isNull("BeneIDIssuedByCountry"))
-                paymentApiRequest.setBeneIDIssuedByCountry(json.getString("BeneIDIssuedByCountry"));
-
-            if (!json.isNull("BeneIDIssuedByState"))
-                paymentApiRequest.setBeneIDIssuedByState(json.getString("BeneIDIssuedByState"));
-
-            if (!json.isNull("BeneIDIssueDate"))
-                paymentApiRequest.setBeneIDIssueDate(json.getString("BeneIDIssueDate"));
-
-            if (!json.isNull("BeneIDExpirationDate"))
-                paymentApiRequest.setBeneIDExpirationDate(json.getString("BeneIDExpirationDate"));
-
-            if (!json.isNull("BeneOccupation"))
-                paymentApiRequest.setBeneOccupation(json.getString("BeneOccupation"));
-
-            if (!json.isNull("BeneGender"))
-                paymentApiRequest.setBeneGender(json.getString("BeneGender"));
-
-            if (!json.isNull("BeneTaxID"))
-                paymentApiRequest.setBeneTaxID(json.getString("BeneTaxID"));
-
-            if (!json.isNull("BeneCustRelationship"))
-                paymentApiRequest.setBeneCustRelationship(json.getString("BeneCustRelationship"));
-
         } catch (Exception e) {
-            logger.error("Error in parseAndPrepareRequest: Error = {} ", e.getMessage());
+            logger.error("Error in parseAndPrepareRequest: Error = {}", e.getMessage(), e);
             paymentApiRequest = new PaymentApiRequest();
+            paymentApiRequest.setIpAddress(requestIp);
         }
         return paymentApiRequest;
     }
@@ -139,36 +73,36 @@ public class ParseUtil {
 
     public static boolean isValidPaymentRequest(PaymentApiRequest paymentApiRequest) {
         return Objects.nonNull(paymentApiRequest)
-                && isNotNullAndNotEmpty(paymentApiRequest.getExchCode())
-                && isNotNullAndNotEmpty(paymentApiRequest.getPinno())
-                && isNotNullAndNotEmpty(paymentApiRequest.getBrUserId())
-                && isNotNullAndNotEmpty(paymentApiRequest.getBrCode())
-                && isNotNullAndNotEmpty(paymentApiRequest.getBeneIDNumber())
-                && isNotNullAndNotEmpty(paymentApiRequest.getDob())
-                && isNotNullAndNotEmpty(paymentApiRequest.getTranNo())
-                && isNotNullAndNotEmpty(paymentApiRequest.getAddress())
-                && isNotNullAndNotEmpty(paymentApiRequest.getCity())
-                //&& isNotNullAndNotEmpty(paymentApiRequest.getZipCode())
-                && isNotNullAndNotEmpty(paymentApiRequest.getMobileNo())
-                && isNotNullAndNotEmpty(paymentApiRequest.getPurposeOfTran())
-                && isNotNullAndNotEmpty(paymentApiRequest.getRelationWithRemitter());
+                && isNotBlankAndNotEmpty(paymentApiRequest.getExchCode())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getPinno())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getBrUserId())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getBrCode())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getBeneIDNumber())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getDob())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getTranNo())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getAddress())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getCity())
+                //&& isNotBlankAndNotEmpty(paymentApiRequest.getZipCode())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getMobileNo())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getPurposeOfTran())
+                && isNotBlankAndNotEmpty(paymentApiRequest.getRelationWithRemitter());
     }
 
     public static boolean isValidICTransactionReportBody(TransactionReportRequestBody report) {
-        return isNotNullAndNotEmpty(report.getUserId()) && isNotNullAndNotEmpty(report.getPassword()) &&
-                isNotNullAndNotEmpty(report.getExchcode()) && isNotNullAndNotEmpty(report.getFromDate()) && isNotNullAndNotEmpty(report.getToDate());
+        return isNotBlankAndNotEmpty(report.getUserId()) && isNotBlankAndNotEmpty(report.getPassword()) &&
+                isNotBlankAndNotEmpty(report.getExchcode()) && isNotBlankAndNotEmpty(report.getFromDate()) && isNotBlankAndNotEmpty(report.getToDate());
     }
 
 
-    public static boolean isNotNullAndNotEmpty(String value) {
+    public static boolean isNotBlankAndNotEmpty(String value) {
         return Objects.nonNull(value) && !"".equals(value) && !value.isEmpty();
     }
 
-    public static boolean isNotNullAndNotEmpty(Object value) {
+    public static boolean isNotBlankAndNotEmpty(Object value) {
         return Objects.nonNull(value) && !"".equals(value) && !value.toString().isEmpty();
     }
 
-    public static boolean isNotNullAndNotEmptyList(List<? extends Object> list) {
+    public static boolean isNotBlankAndNotEmptyList(List<? extends Object> list) {
         return Objects.nonNull(list) && !list.isEmpty();
     }
 

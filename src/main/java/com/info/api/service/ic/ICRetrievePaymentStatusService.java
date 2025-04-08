@@ -3,12 +3,11 @@ package com.info.api.service.ic;
 
 import com.info.api.dto.ic.APIResponse;
 import com.info.api.dto.ic.ICExchangePropertyDTO;
-import com.info.api.dto.ic.ICPaymentStatusDTO;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 public interface ICRetrievePaymentStatusService<T> {
 
-    APIResponse<T> getPaymentStatus(@NotNull ICExchangePropertyDTO dto, @NotNull String referenceNo);
+    APIResponse<T> getPaymentStatus(@NotBlank ICExchangePropertyDTO dto, @NotBlank String referenceNo);
 
 }

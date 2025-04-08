@@ -3,7 +3,7 @@ package com.info.api.dto.ic;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 @Data
@@ -11,22 +11,22 @@ public class ICPaymentStatusDTO implements Serializable {
 
     private static final long serialVersionUID = -7969298090989117693L;
 
-    @NotNull
+    @NotBlank
     private String reference;
 
-    @NotNull
+    @NotBlank
     private String status;
 
-    @NotNull
+    @NotBlank
     private String statusDescription;
 
-    @NotNull
+    @NotBlank
     private String payingAgentCorrespondentId;
 
-    @NotNull
+    @NotBlank
     private String payingAgentName;
 
-    @NotNull
+    @NotBlank
     private String sentAt;
 
 }

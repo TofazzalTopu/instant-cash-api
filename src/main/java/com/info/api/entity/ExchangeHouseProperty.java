@@ -28,6 +28,9 @@ public class ExchangeHouseProperty implements Serializable {
     @Column(name = "KEY_VALUE", nullable = false, length = 500)
     private String keyValue;
 
+    public ExchangeHouseProperty(String icExample1, String value1) {
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

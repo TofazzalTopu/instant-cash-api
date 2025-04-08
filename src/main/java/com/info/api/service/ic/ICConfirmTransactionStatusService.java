@@ -7,14 +7,14 @@ import com.info.api.dto.ic.ICExchangePropertyDTO;
 import com.info.api.entity.RemittanceData;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 public interface ICConfirmTransactionStatusService {
 
-    List<RemittanceData> confirmOutstandingTransactionStatus(@NotNull ICExchangePropertyDTO icExchangePropertyDTO, @NotEmpty List<RemittanceData> remittanceDataList);
+    List<RemittanceData> confirmOutstandingTransactionStatus(@NotBlank ICExchangePropertyDTO icExchangePropertyDTO, @NotEmpty List<RemittanceData> remittanceDataList);
 
-    PaymentApiResponse confirmCahTransactionPayment(@NotNull PaymentApiResponse paymentApiResponse, PaymentApiRequest paymentApiRequest, @NotNull ICExchangePropertyDTO icDTO);
+    PaymentApiResponse confirmCahTransactionPayment(@NotBlank PaymentApiResponse paymentApiResponse, PaymentApiRequest paymentApiRequest, @NotBlank ICExchangePropertyDTO icDTO);
 
-    PaymentApiResponse notifyPaymentStatus(PaymentApiResponse paymentApiResponse, @NotNull ICExchangePropertyDTO icDTO, @NotNull RemittanceData remittanceData, ICConfirmDTO icConfirmDTO, @NotNull String referenceNo, boolean update);
+    PaymentApiResponse notifyPaymentStatus(PaymentApiResponse paymentApiResponse, @NotBlank ICExchangePropertyDTO icDTO, @NotBlank RemittanceData remittanceData, ICConfirmDTO icConfirmDTO, @NotBlank String referenceNo, boolean update);
 }

@@ -33,6 +33,8 @@ public class ApiClientScheduler {
         try {
             if (isICSchedulerEnabled) instantCashExecutor.execute(instantCashAPIProcessor::process);
         } finally {
+            while (!instantCashExecutor.isTerminated()) {
+            }
             instantCashExecutor.shutdown();
         }
     }

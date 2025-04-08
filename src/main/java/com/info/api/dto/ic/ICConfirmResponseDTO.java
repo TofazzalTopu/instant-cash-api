@@ -4,19 +4,19 @@ package com.info.api.dto.ic;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @Data
 @ToString
 public class ICConfirmResponseDTO {
 
-    @NotNull
+    @NotBlank
     private String reference;
 
-    @NotNull
+    @NotBlank
     private String status;
 
-    @NotNull
+    @NotBlank
     private String statusDescription;
 
 }

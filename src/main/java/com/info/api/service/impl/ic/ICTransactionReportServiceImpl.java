@@ -60,7 +60,7 @@ public class ICTransactionReportServiceImpl implements ICTransactionReportServic
                 transactionDTOArrayList = new ArrayList<>(bodyOptional.get().getData());
                 apiResponse.setData(transactionDTOArrayList);
             }
-            if (ParseUtil.isNotNullAndNotEmptyList(transactionDTOArrayList)) {
+            if (ParseUtil.isNotBlankAndNotEmptyList(transactionDTOArrayList)) {
                 return deleteTraceAndCreateErrorResponse(apiResponse, trace);
             }
         } catch (Exception e) {
