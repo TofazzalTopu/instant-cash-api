@@ -1,12 +1,10 @@
 package com.info.api.dto.ic;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.Date;
+import lombok.*;
 
 @Data
+@Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class ICIdDetailsDTO {
@@ -25,13 +23,13 @@ public class ICIdDetailsDTO {
     /**
      Format: ISO-3166 alpha-2 code
      */
-    private Date issueDate;
+    private String issueDate;
     /**
      Format: ISO-3166 alpha-2 code
      */
-    private Date expiryDate;
+    private String expiryDate;
     /**
      Format: ISO-3166 alpha-2 code
      */
-    private String placeOfIssue;
+    private String placeOfIssue = "BD";
 }

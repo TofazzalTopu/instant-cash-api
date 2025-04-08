@@ -20,4 +20,8 @@ public class RemittanceDataStatus {
     public static final String PAID = "PAID";
     public static final String RECEIVED = "RECEIVED";
     public static final String REJECTED = "REJECTED";
+
+    public static final String NEW_STATUS_D = "D";
+    public static final String NEW_STATUS_X = "X";
+    public static final String NEW_STATUS_Y = "Y";
 }

@@ -1,22 +1,20 @@
 package com.info.api.mapper;
 
-import com.info.api.constants.RemittanceDataStatus;
+import com.info.api.constants.Constants;
+import com.info.api.dto.PaymentApiRequest;
+import com.info.api.dto.SearchApiResponse;
 import com.info.api.entity.ApiTrace;
 import com.info.api.entity.ICCashRemittanceData;
+import com.info.api.entity.RemittanceData;
+import com.info.api.dto.ic.ICBankDetailsDTO;
 import com.info.api.dto.ic.ICOutstandingTransactionDTO;
-import com.info.api.dto.SearchApiResponse;
-import com.info.api.service.common.CommonService;
-import com.info.api.util.Constants;
 import com.info.api.util.DateUtil;
-import com.info.api.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Map;
 import java.util.Objects;
 
 @Component
@@ -24,18 +22,8 @@ public class ICPaymentReceiveRemittanceMapper {
 
     public static final Logger logger = LoggerFactory.getLogger(ICPaymentReceiveRemittanceMapper.class);
 
-    private final CommonService commonService;
-
-    @Value("${bank.code}")
-    private String bankCode;
-
-    public ICPaymentReceiveRemittanceMapper(CommonService commonService) {
-        this.commonService = commonService;
-    }
-
-
-    public ICCashRemittanceData prepareICCashRemittanceData(ICCashRemittanceData remittanceData, ICOutstandingTransactionDTO icOutstandingDTO, String exchangeCode, ApiTrace trace, boolean isCashTransaction) {
-
+    public RemittanceData prepareICCashRemittanceData(ICOutstandingTransactionDTO icOutstandingDTO, String exchangeCode, ApiTrace trace) {
+        RemittanceData remittanceData = new RemittanceData();
         try {
             DateFormat dt = new SimpleDateFormat("yyyyMMdd");
             remittanceData.setAmount(Objects.nonNull(icOutstandingDTO.getPayingAmount()) ? icOutstandingDTO.getPayingAmount() : icOutstandingDTO.getSettlementAmount());
@@ -59,20 +47,36 @@ public class ICPaymentReceiveRemittanceMapper {
             remittanceData.setExchangeRate(icOutstandingDTO.getSettlementRate());
 
             mapRemitterInfo(remittanceData, icOutstandingDTO);
-            mapBankBranchInfo(remittanceData, icOutstandingDTO, isCashTransaction);
+            mapBankBranchInfo(remittanceData, icOutstandingDTO);
 
-            remittanceData.setProcessStatus(RemittanceDataStatus.OPEN);
+            remittanceData.setProcessStatus(RemittanceData.OPEN);
+//            remittanceData.setFinalStatus("02");
             remittanceData.setProcessDate(trace.getCbsDate());
             remittanceData.setMiddlewareId(trace.getId());
             remittanceData.setMiddlewarePush(Constants.MIDDLEWARE_PUSH_UNDONE);
+            remittanceData.setRemittanceMessageType("WEB");
             remittanceData.setSourceType(Constants.API_SOURCE_TYPE);
         } catch (Exception e) {
-            logger.error("Error in prepareRemittanceData for TraceID: " + trace.getId(), e);
+            logger.error("Error in ICCashRemittance prepareRemittanceData for TraceID: " + trace.getId(), e);
         }
         return remittanceData;
     }
 
-    private void mapBeneficiaryInfo(ICCashRemittanceData remittanceData, ICOutstandingTransactionDTO icOutstandingDTO) {
+    public RemittanceData prepareICCashRemittanceData(ICOutstandingTransactionDTO icOutstandingDTO, PaymentApiRequest paymentApiRequest, String exchangeCode, ApiTrace trace) {
+        RemittanceData remittanceData = prepareICCashRemittanceData(icOutstandingDTO, exchangeCode, trace);
+        remittanceData.setExchangeCode(paymentApiRequest.getExchCode());
+        remittanceData.setBranchCode(Integer.parseInt(paymentApiRequest.getBrCode()));
+        remittanceData.setReferenceNo(paymentApiRequest.getPinno());
+        remittanceData.setIdNo(paymentApiRequest.getBeneIDNumber());
+        remittanceData.setReceiverAddress(paymentApiRequest.getAddress());
+        remittanceData.setPhoneNo(paymentApiRequest.getMobileNo());
+        remittanceData.setSenderPhone(paymentApiRequest.getMobileNo());
+        remittanceData.setCityDistrict(paymentApiRequest.getCity());
+        remittanceData.setCountryOriginate(paymentApiRequest.getBeneIDIssuedByCountry());
+        return remittanceData;
+    }
+
+    private void mapBeneficiaryInfo(RemittanceData remittanceData, ICOutstandingTransactionDTO icOutstandingDTO) {
         try {
             if (Objects.nonNull(icOutstandingDTO.getBeneficiary())) {
                 String beneficiaryFirstName = Objects.nonNull(icOutstandingDTO.getBeneficiary().getFirstName()) ? icOutstandingDTO.getBeneficiary().getFirstName() : "";
@@ -97,7 +101,7 @@ public class ICPaymentReceiveRemittanceMapper {
         }
     }
 
-    private void mapRemitterInfo(ICCashRemittanceData remittanceData, ICOutstandingTransactionDTO icOutstandingDTO) {
+    private void mapRemitterInfo(RemittanceData remittanceData, ICOutstandingTransactionDTO icOutstandingDTO) {
         if (Objects.nonNull(icOutstandingDTO.getRemitter())) {
             remittanceData.setSenderPhone(Objects.nonNull(icOutstandingDTO.getRemitter().getPhoneNumber()) ? icOutstandingDTO.getRemitter().getPhoneNumber() : icOutstandingDTO.getRemitter().getMobileNumber());
             String senderFirstName = Objects.nonNull(icOutstandingDTO.getRemitter().getFirstName()) ? icOutstandingDTO.getRemitter().getFirstName() : "";
@@ -119,54 +123,38 @@ public class ICPaymentReceiveRemittanceMapper {
     }
 
     // if the first 3 digits of the bankCode is 185 (RUPALI Bank Head Office) then the transaction type is EFT.
-    private void mapBankBranchInfo(ICCashRemittanceData remittanceData, ICOutstandingTransactionDTO icOutstandingDTO, boolean isCashTransaction) {
+    private void mapBankBranchInfo(RemittanceData remittanceData, ICOutstandingTransactionDTO icOutstandingDTO) {
         try {
             boolean isBankDetailsNonEmpty = Objects.nonNull(icOutstandingDTO.getBeneficiary()) && Objects.nonNull(icOutstandingDTO.getBeneficiary().getBankDetails());
-            if (isBankDetailsNonEmpty && isEFTRemittance(icOutstandingDTO.getBeneficiary().getBankDetails().getBankCode())) {
-                remittanceData.setRemittanceMessageType("EFT");
-                remittanceData.setBankCode(bankCode);
-                // For 13 digit account number replacing the branch information with account branch
-                if (Objects.nonNull(remittanceData.getCreditorAccountNo()) && remittanceData.getCreditorAccountNo().length() == 13) {
-                    Map<String, String> accountBranchInfo = commonService.getAccountBranchInfo(remittanceData.getCreditorAccountNo());
-                    remittanceData.setBranchCode(Integer.parseInt(accountBranchInfo.get("branch_code")));
-                    remittanceData.setBranchName(accountBranchInfo.get("branch_name"));
-                    remittanceData.setBranchRoutingNumber(bankCode + StringUtil.padLeftZeros(accountBranchInfo.get("routing_no"), 6));
-                    remittanceData.setOwnBranchCode(Integer.parseInt(accountBranchInfo.get("branch_code")));
-                }
-            } else {
-                if (isCashTransaction) {
-                    remittanceData.setRemittanceMessageType("CASH");
-                } else {
-                    remittanceData.setRemittanceMessageType("BEFTN");
-                }
-                if (isBankDetailsNonEmpty) {
-                    remittanceData.setBranchRoutingNumber(icOutstandingDTO.getBeneficiary().getBankDetails().getBankCode());
+            ICBankDetailsDTO icBankDetailsDTO = icOutstandingDTO.getBeneficiary().getBankDetails();
+            if (isBankDetailsNonEmpty) {
+                String routingNumber = icBankDetailsDTO.getBankCode();
+                remittanceData.setBranchRoutingNumber(routingNumber);
 
-                    String address1 = Objects.nonNull(icOutstandingDTO.getBeneficiary().getBankDetails().getBankAddress1()) ? icOutstandingDTO.getBeneficiary().getBankDetails().getBankAddress1() : "";
-                    String address2 = Objects.nonNull(icOutstandingDTO.getBeneficiary().getBankDetails().getBankAddress2()) ? icOutstandingDTO.getBeneficiary().getBankDetails().getBankAddress2() : "";
-                    remittanceData.setBankName(icOutstandingDTO.getBeneficiary().getBankDetails().getBankName() + " " + address1 + " " + address2);
-                    remittanceData.setBankCode(icOutstandingDTO.getBeneficiary().getBankDetails().getBankCode());
-                    remittanceData.setBranchName(icOutstandingDTO.getBeneficiary().getBankDetails().getBankName() + " " + address1 + " " + address2);
-                }
+                String address1 = Objects.nonNull(icBankDetailsDTO.getBankAddress1()) ? icBankDetailsDTO.getBankAddress1() : "";
+                String address2 = Objects.nonNull(icBankDetailsDTO.getBankAddress2()) ? icBankDetailsDTO.getBankAddress2() : "";
+                remittanceData.setBankName(icBankDetailsDTO.getBankName());
+                remittanceData.setBranchName(icBankDetailsDTO.getBankName() + ", " + address1 + ", " + address2);
             }
         } catch (Exception e) {
-            logger.error("Error in mapBankBranchInfo()", e);
+            logger.error("Error in ICCashRemittance mapBankBranchInfo()", e);
         }
     }
 
-    private boolean isEFTRemittance(String rmBankCode) {
-        return Objects.nonNull(rmBankCode) && rmBankCode.trim().length() >= 3 && rmBankCode.trim().substring(0, 3).equals(bankCode);
-    }
-
-
     public void mapSearchApiResponse(SearchApiResponse searchApiResponse, ICCashRemittanceData icCashRemittanceData) {
-        searchApiResponse.setBenfFirstName(icCashRemittanceData.getCreditorName());
-        searchApiResponse.setExchTranId(icCashRemittanceData.getReferenceNo());
-        searchApiResponse.setFxAmount(String.valueOf(icCashRemittanceData.getAmount()));
-        searchApiResponse.setOriginalAmount(String.valueOf(icCashRemittanceData.getAmountOriginate()));
-        searchApiResponse.setOriginalCurrency(icCashRemittanceData.getCurrencyOriginate());
+        searchApiResponse.setExchTranId(icCashRemittanceData.getExchangeTransactionNo());
+        searchApiResponse.setExchCode(icCashRemittanceData.getExchangeCode());
         searchApiResponse.setOrignCountryName(icCashRemittanceData.getCountryOriginate());
+        searchApiResponse.setPinno(icCashRemittanceData.getReferenceNo());
+        searchApiResponse.setReference(icCashRemittanceData.getReferenceNo());
+        searchApiResponse.setFxAmount(String.valueOf(icCashRemittanceData.getAmount()));
+        searchApiResponse.setBenfFirstName(icCashRemittanceData.getCreditorName());
         searchApiResponse.setRemitterName(icCashRemittanceData.getSenderName());
+        searchApiResponse.setOriginalCurrency(icCashRemittanceData.getCurrencyOriginate());
+        searchApiResponse.setOriginalAmount(String.valueOf(icCashRemittanceData.getAmountOriginate()));
+        searchApiResponse.setPayoutStatusDetails(icCashRemittanceData.getProcessStatus());
+        searchApiResponse.setTranNo(icCashRemittanceData.getExchangeTransactionNo());
+        searchApiResponse.setOriginalRequest(icCashRemittanceData.getReferenceNo());
         String tranDate = String.valueOf(icCashRemittanceData.getProcessDate());
 
         try {
@@ -178,5 +166,12 @@ public class ICPaymentReceiveRemittanceMapper {
         } catch (Exception e) {
             searchApiResponse.setTranDate(tranDate);
         }
+    }
+
+    public SearchApiResponse createErrorResponse(SearchApiResponse response, String errorMessage) {
+        logger.error(errorMessage);
+        response.setErrorMessage(errorMessage);
+        response.setApiStatus(Constants.API_STATUS_ERROR);
+        return response;
     }
 }

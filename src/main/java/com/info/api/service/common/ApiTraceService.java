@@ -45,9 +45,10 @@ public interface ApiTraceService {
 
     void deleteById(long id);
 
-    <T> ApiTrace buildApiTrace(Long apiTrace, String exchangeCode, String referenceNo, T response, String status);
+    <T> ApiTrace buildApiTrace(ApiTrace apiTrace, String referenceNo, T response, String status);
 
-    ApiTrace saveApiTrace(ApiTrace apiTrace, String exchangeCode, String request, String response, String status, String requestType, String correlationId);
+    ApiTrace saveApiTrace(ApiTrace apiTrace, String request, String response, String status);
+
     List<Long> getCancelIds(int tryCount);
 
 }

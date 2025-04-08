@@ -1,9 +1,9 @@
 package com.info.api.schedular;
 
 import com.info.api.processor.InstantCashAPIProcessor;
-import com.info.api.util.ApiUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,23 +23,18 @@ public class ApiClientScheduler {
         this.instantCashAPIProcessor = instantCashAPIProcessor;
     }
 
+    @Value("${IS_INSTANT_CASH_API_SCHEDULER_ENABLED:true}")
+    boolean isICSchedulerEnabled;
 
-    @Scheduled(fixedDelay = 1000 * 60 * 5)
+    @Scheduled(fixedDelayString = "${API_SCHEDULER_INTERVAL}", initialDelay = 1000)
     public void apiClientScheduler() {
-        logger.info("ICScheduler started.");
+        logger.info("Scheduler execution started. ");
         ExecutorService instantCashExecutor = Executors.newFixedThreadPool(1);
-        ExecutorService riaExecutor = Executors.newFixedThreadPool(1);
-
         try {
-            logger.info("InstantCashAPIProcessor started");
-            instantCashExecutor.execute(() -> instantCashAPIProcessor.process(ApiUtil.getICExchangeProperties()));
-        } catch (Exception ex) {
-            logger.error("Error in ApiClientScheduler: {}", ex.getMessage());
+            if (isICSchedulerEnabled) instantCashExecutor.execute(instantCashAPIProcessor::process);
         } finally {
-            riaExecutor.shutdown();
             instantCashExecutor.shutdown();
         }
-        logger.error("ICScheduler ended.");
     }
 
 }

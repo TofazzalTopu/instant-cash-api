@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Build Maven') {
             steps {
-                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/TofazzalTopu/eureka-service']])
+                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/TofazzalTopu/instant-cash-api']])
                 sh 'mvn clean install'
             }
         }
@@ -15,7 +15,7 @@ pipeline {
         stage ("Build Docker Image"){
             steps{
                 script {
-                    sh 'docker build -t tofazzal/spring-boot-docker .'
+                    sh 'docker build -t tofazzal/instant-cash-api .'
                 }
             }
         }
@@ -25,7 +25,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'my-docker-hub-pwd', variable: 'my-docker-hub-pwd')]) {
                     sh 'docker login -u tofazzal -p ${my-docker-hub-pwd}'
                     }
-                    sh 'docker push tofazzal/spring-boot-docker'
+                    sh 'docker push tofazzal/instant-cash-api'
                 }
             }
         }

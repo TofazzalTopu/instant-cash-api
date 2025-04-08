@@ -6,34 +6,22 @@ import com.info.api.service.common.ApiTraceService;
 import com.info.api.service.common.RemittanceDataService;
 import com.info.api.service.common.RemittanceProcessMasterService;
 import com.info.api.service.common.RemittanceProcessService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class RemittanceProcessServiceImpl implements RemittanceProcessService {
-
     private static final Logger logger = LoggerFactory.getLogger(RemittanceProcessServiceImpl.class);
 
     private final ApiTraceService apiTraceService;
-
     private final RemittanceDataService remittanceDataService;
-
     private final RemittanceProcessMasterService remittanceProcessMasterService;
-
-
-    @Value("${RIA_EXCHANGE_HOUSE_BRANCH_USER:CBSRMS}")
-    private String RIA_EXCHANGE_HOUSE_BRANCH_USER;
-
-    public RemittanceProcessServiceImpl(ApiTraceService apiTraceService, RemittanceDataService remittanceDataService,  RemittanceProcessMasterService remittanceProcessMasterService) {
-        this.apiTraceService = apiTraceService;
-        this.remittanceDataService = remittanceDataService;
-        this.remittanceProcessMasterService = remittanceProcessMasterService;
-    }
 
     @Override
     public List<RemittanceData> saveAllRemittanceData(List<RemittanceData> remittanceDataList) {
@@ -42,14 +30,10 @@ public class RemittanceProcessServiceImpl implements RemittanceProcessService {
 
     @Override
     @Transactional
-    public void processDownloadData(List<RemittanceData> remittanceDataList, String exchangeCode, String exchangeName) {
+    public List<RemittanceData> processAndSaveRemittanceData(List<RemittanceData> remittanceDataList, String exchangeCode, String exchangeName) {
         if (!remittanceDataList.isEmpty()) {
-            RemittanceProcessMaster master = null;
-            RemittanceProcessMaster masterRecord = remittanceProcessMasterService.findFirstByProcessDateAndExchangeHouseCodeAndApiDataAndProcessStatus(remittanceDataList.get(0).getProcessDate(), exchangeCode, 1, "OPEN");
-            if (masterRecord != null) {
-                master = masterRecord;
-            }
-
+            RemittanceProcessMaster master = remittanceProcessMasterService.findFirstByProcessDateAndExchangeHouseCodeAndApiDataAndProcessStatus(remittanceDataList.get(0).getProcessDate(), exchangeCode, 1, "OPEN");
+            
             long eftCount = remittanceDataList.stream().filter(d -> d.getRemittanceMessageType().equals("EFT")).count();
             long beftnCount = remittanceDataList.stream().filter(d -> d.getRemittanceMessageType().equals("BEFTN")).count();
             long mobileCount = remittanceDataList.stream().filter(d -> d.getRemittanceMessageType().equals("MOBILE")).count();
@@ -60,7 +44,7 @@ public class RemittanceProcessServiceImpl implements RemittanceProcessService {
                 master.setFileName(exchangeName);
                 master.setApiData(1);
                 master.setManualOpen(0);
-                master.setProcessByUser(RIA_EXCHANGE_HOUSE_BRANCH_USER);
+                master.setProcessByUser("CBSinfo");
                 master.setExchangeHouseCode(exchangeCode);
                 master.setProcessDate(remittanceDataList.get(0).getProcessDate());
                 master.setProcessStatus("OPEN");
@@ -79,28 +63,28 @@ public class RemittanceProcessServiceImpl implements RemittanceProcessService {
             for (RemittanceData data : remittanceDataList) {
                 data.setRemittanceProcessMaster(master);
             }
-            remittanceDataService.saveAll(remittanceDataList);
+            remittanceDataList = remittanceDataService.saveAll(remittanceDataList);
         }
+        return remittanceDataList;
     }
 
-
     @Override
-    public void saveWebOrSpotData(RemittanceData data, String exchangeCode, String exchangeName) {
-        logger.info("Enter into saveWebOrSpotData");
+    public RemittanceData saveWebOrSpotData(RemittanceData data, String exchangeCode, String exchangeName) {
         try {
             RemittanceProcessMaster master = null;
             RemittanceProcessMaster masterRecord = remittanceProcessMasterService.findFirstByProcessDateAndExchangeHouseCodeAndApiDataAndProcessStatus(data.getProcessDate(), exchangeCode, 1, "OPEN");
-            if (masterRecord != null) master = masterRecord;
+            if (masterRecord != null) {
+                master = masterRecord;
+            }
 
             if (master == null) {
-                logger.info("Enter into saveWebOrSpotData masterRecord present");
                 master = new RemittanceProcessMaster();
                 master.setCommon(true);
                 master.setExchangeHouseCode(exchangeCode);
                 master.setFileName(exchangeName);
                 master.setApiData(1);
                 master.setManualOpen(0);
-                master.setProcessByUser(RIA_EXCHANGE_HOUSE_BRANCH_USER);
+                master.setProcessByUser("CBSinfo");
                 master.setProcessDate(data.getProcessDate());
                 master.setProcessStatus("OPEN");
                 master.setTotalBeftn(0);
@@ -116,7 +100,9 @@ public class RemittanceProcessServiceImpl implements RemittanceProcessService {
             remittanceDataService.save(data);
             apiTraceService.updateSyncFlag(exchangeCode, data.getSecurityCode(), data.getProcessDate());
         } catch (Exception e) {
-            logger.info("Error in saveWebOrSpotData. Error = " + e);
+            logger.info("Error in saveWebOrSpotData. Error = {}", e.getMessage());
         }
+
+        return data;
     }
 }

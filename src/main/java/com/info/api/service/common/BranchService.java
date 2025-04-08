@@ -8,4 +8,8 @@ public interface BranchService {
 
     List<Branch> findAll();
     List<Integer> findAllBranchRoutingNumbers();
+
+    List<Branch> findAllByRoutingNumber(List<Integer> routingNumbers);
+
+    Branch findByRoutingNumber(Integer routingNumber);
 }

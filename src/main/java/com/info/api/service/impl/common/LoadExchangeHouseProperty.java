@@ -1,7 +1,9 @@
-package com.info.api.service.common;
+package com.info.api.service.impl.common;
 
 import com.info.api.entity.ExchangeHouseProperty;
+import com.info.api.service.common.ExchangeHousePropertyService;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -11,20 +13,17 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class LoadExchangeHouseProperty {
 
     private final ExchangeHousePropertyService exchangeHousePropertyService;
 
     @Getter
-    public static final List<ExchangeHouseProperty> exchangeHousePropertyList = new ArrayList<>();
-
-    public LoadExchangeHouseProperty(ExchangeHousePropertyService exchangeHousePropertyService) {
-        this.exchangeHousePropertyService = exchangeHousePropertyService;
-    }
+    public static List<ExchangeHouseProperty> exchangeHousePropertyList = new ArrayList<>();
 
     @PostConstruct
-    protected void exchangeHouseProperty() {
-        exchangeHousePropertyList.addAll(exchangeHousePropertyService.findAll());
+    public void exchangeHouseProperty() {
+        exchangeHousePropertyList = exchangeHousePropertyService.findAll();
     }
 
     public static List<ExchangeHouseProperty> getICExchangeHouseProperty() {
@@ -32,5 +31,8 @@ public class LoadExchangeHouseProperty {
         return exchangeHousePropertyList.stream().filter(icPredicate).collect(Collectors.toList());
     }
 
-
+    public static List<ExchangeHouseProperty> getRIAExchangeHouseProperty() {
+        Predicate<ExchangeHouseProperty> icPredicate = e -> e.getKeyLabel().startsWith("RIA_");
+        return exchangeHousePropertyList.stream().filter(icPredicate).collect(Collectors.toList());
+    }
 }

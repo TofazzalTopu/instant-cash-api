@@ -1,13 +1,15 @@
 package com.info.api.dto.ic;
 
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import javax.validation.constraints.NotNull;
 
 @Data
 @Builder
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class ICConfirmDTO {
 
     @NotNull
@@ -18,4 +20,5 @@ public class ICConfirmDTO {
 
     private String remarks;
 
+    private ICConfirmBeneficiaryDTO beneficiaryDetails;
 }

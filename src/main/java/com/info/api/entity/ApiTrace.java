@@ -1,8 +1,6 @@
 package com.info.api.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -10,8 +8,6 @@ import java.util.Date;
 
 @Data
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "REM_API_TRACE")
 public class ApiTrace implements Serializable {
 
@@ -23,7 +19,7 @@ public class ApiTrace implements Serializable {
     @SequenceGenerator(name = "REM_API_TRACE_SEQ_GEN", sequenceName = "REM_API_TRACE_SEQ", allocationSize = 1)
     private long id;
 
-    @Column(name = "EXCHANGE_CODE", nullable = false)
+    @Column(name = "EXCHANGE_CODE")
     private String exchangeCode;
 
     @Column(name = "USER_ID")
@@ -41,7 +37,7 @@ public class ApiTrace implements Serializable {
     @Column(name = "REQ_TYPE")
     private String requestType;
 
-    @Column(name = "RESPONSE_MSG", columnDefinition = "TEXT")
+    @Column(name = "RESPONSE_MSG")
     private String responseMsg;
 
     @Column(name = "STATUS")
@@ -72,7 +68,5 @@ public class ApiTrace implements Serializable {
     @Column(name = "TRY_COUNT")
     private int tryCount;
 
-    @Column(name = "CORRELATION_ID", nullable = false)
-    private String correlationId;
 
 }

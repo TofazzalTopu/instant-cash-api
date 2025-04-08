@@ -2,15 +2,17 @@ package com.info.api.service.ic;
 
 import com.info.api.entity.ICCashRemittanceData;
 
+import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
 public interface ICCashRemittanceDataService {
 
-    ICCashRemittanceData save(ICCashRemittanceData remittanceData);
+    ICCashRemittanceData save(@NotNull ICCashRemittanceData remittanceData);
 
-    Optional<ICCashRemittanceData> findByExchangeCodeAndReferenceNoAndProcessStatus(String exchangeCode, String referenceNo, Integer middlewarePush, String processStatus);
+    Optional<ICCashRemittanceData> findByExchangeCodeAndReferenceNoAndProcessStatus(@NotNull String exchangeCode, @NotNull String referenceNo, @NotNull Integer middlewarePush, @NotNull String processStatus);
 
-    Optional<ICCashRemittanceData> findByExchangeCodeAndReferenceNo(String exchangeCode, String referenceNo);
+    Optional<ICCashRemittanceData> findByExchangeCodeAndReferenceNo(@NotNull String exchangeCode, @NotNull String referenceNo);
 
 
+    void delete(ICCashRemittanceData icCashRemittanceData);
 }

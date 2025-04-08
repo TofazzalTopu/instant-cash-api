@@ -1,55 +1,32 @@
 package com.info.api.controller;
 
-import com.info.api.dto.ApiResponse;
-import com.info.api.service.common.CommonService;
-import com.info.api.service.ic.ICPaymentReceiveService;
-import com.info.api.service.ic.ICRetrievePaymentStatusService;
+import com.info.api.dto.ic.APIResponse;
+import com.info.api.service.impl.common.ApiService;
 import com.info.api.service.ic.ICUnlockRemittanceService;
 import com.info.api.util.ApiUtil;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 
-import static com.info.api.util.Constants.*;
-
+@CrossOrigin
 @RestController
-@RequestMapping("/instantCash")
-@CrossOrigin(origins = "localhost:3000", allowCredentials = "true")
+@RequestMapping("/apiservice")
+@RequiredArgsConstructor
 public class InstantCashController {
 
-    private final CommonService commonService;
-    private final ICPaymentReceiveService icPaymentReceiveService;
+    private final ApiService apiService;
     private final ICUnlockRemittanceService icUnlockRemittanceService;
-    private final ICRetrievePaymentStatusService icRetrievePaymentStatusService;
 
-
-    public InstantCashController(CommonService commonService, ICPaymentReceiveService icPaymentReceiveService, ICUnlockRemittanceService icUnlockRemittanceService, ICRetrievePaymentStatusService icRetrievePaymentStatusService) {
-        this.commonService = commonService;
-        this.icPaymentReceiveService = icPaymentReceiveService;
-        this.icUnlockRemittanceService = icUnlockRemittanceService;
-        this.icRetrievePaymentStatusService = icRetrievePaymentStatusService;
-    }
-
-    @GetMapping(value = "/receive-payment")
-    public ResponseEntity<ApiResponse> receivePayment(@RequestHeader @NotNull String userId, @RequestHeader @NotNull String password, @RequestParam @NotNull String reference) {
-        commonService.verifyAuthorization(userId, password);
-        return ResponseEntity.ok().body(new ApiResponse<>(HttpStatus.OK.value(), PAYMENT_RECEIVE_SUCCESSFULLY, icPaymentReceiveService.paymentReceive(ApiUtil.getICExchangeProperties(), reference)));
-    }
-
-    @GetMapping(value = "/status")
-    public ResponseEntity<ApiResponse> retrievePaymentStatus(@RequestHeader @NotNull String userId, @RequestHeader @NotNull String password, @RequestParam @NotNull String reference) {
-        commonService.verifyAuthorization(userId, password);
-        return ResponseEntity.ok().body(new ApiResponse<>(HttpStatus.OK.value(), STATUS_RETRIEVE_SUCCESSFULLY, icRetrievePaymentStatusService.retrievePaymentStatus(reference, ApiUtil.getICExchangeProperties())));
+    @GetMapping(value = "/paymentStatus")
+    public ResponseEntity<APIResponse> getPaymentStatus(@RequestHeader @NotNull String userId, @RequestHeader @NotNull String password, @RequestParam("exchcode") String exchcode, @RequestParam @NotNull String reference) {
+        return ResponseEntity.ok().body(apiService.getPaymentStatus(exchcode, reference));
     }
 
     @PostMapping(value = "/unlock")
-    public ResponseEntity<ApiResponse> unlockRemittance(@RequestHeader @NotNull String userId, @RequestHeader @NotNull String password, @RequestBody @NotNull String reference) {
-        commonService.verifyAuthorization(userId, password);
-        return ResponseEntity.ok().body(new ApiResponse<>(HttpStatus.OK.value(), PAYMENT_UNLOCK_SUCCESSFULLY, icUnlockRemittanceService.unlockICOutstandingRemittance(reference, ApiUtil.getICExchangeProperties())));
+    public ResponseEntity<APIResponse> unlockRemittance(@RequestHeader String userId, @RequestHeader String password, @RequestParam String reference) {
+        return ResponseEntity.ok().body(icUnlockRemittanceService.unlockICOutstandingRemittance(reference, ApiUtil.getICExchangeProperties()));
     }
 
 }
-
-

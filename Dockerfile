@@ -1,4 +1,4 @@
-FROM openjdk:11
-ADD target/spring-boot-docker.jar spring-boot-docker.jar
-ENTRYPOINT ["java", "-jar", "spring-boot-docker.jar"]
+FROM openjdk:11-jdk-alpine
+ADD target/instant-cash-api.jar instant-cash-api.jar
+ENTRYPOINT ["java", "-jar", "instant-cash-api.jar"]
 EXPOSE 8081

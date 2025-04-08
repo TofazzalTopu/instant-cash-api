@@ -4,10 +4,12 @@ package com.info.api.dto.ic;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+import java.io.Serializable;
 
 @Data
-public class ICPaymentStatusDTO {
+public class ICPaymentStatusDTO implements Serializable {
+
+    private static final long serialVersionUID = -7969298090989117693L;
 
     @NotNull
     private String reference;
@@ -25,6 +27,6 @@ public class ICPaymentStatusDTO {
     private String payingAgentName;
 
     @NotNull
-    private LocalDateTime sentAt;
+    private String sentAt;
 
 }

@@ -3,20 +3,16 @@ package com.info.api.service.impl.ic;
 import com.info.api.entity.ICCashRemittanceData;
 import com.info.api.repository.ICCashRemittanceDataRepository;
 import com.info.api.service.ic.ICCashRemittanceDataService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
-@Transactional
+@RequiredArgsConstructor
 public class ICCashRemittanceDataServiceImpl implements ICCashRemittanceDataService {
 
     private final ICCashRemittanceDataRepository icCashRemittanceDataRepository;
-
-    public ICCashRemittanceDataServiceImpl(ICCashRemittanceDataRepository icCashRemittanceDataRepository) {
-        this.icCashRemittanceDataRepository = icCashRemittanceDataRepository;
-    }
 
     @Override
     public ICCashRemittanceData save(ICCashRemittanceData remittanceData) {
@@ -31,6 +27,11 @@ public class ICCashRemittanceDataServiceImpl implements ICCashRemittanceDataServ
     @Override
     public Optional<ICCashRemittanceData> findByExchangeCodeAndReferenceNo(String exchangeCode, String referenceNo) {
         return icCashRemittanceDataRepository.findByExchangeCodeAndReferenceNo(exchangeCode, referenceNo);
+    }
+
+    @Override
+    public void delete(ICCashRemittanceData icCashRemittanceData) {
+        icCashRemittanceDataRepository.delete(icCashRemittanceData);
     }
 
 

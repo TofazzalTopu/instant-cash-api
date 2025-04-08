@@ -20,5 +20,7 @@ public class ICExchangePropertyDTO {
     private String unlockUrl;
     private String paymentReceiveUrl;
     private String statusUrl;
+    private String transactionReportUrl;
+    private String icPaymentUserId;
 
 }

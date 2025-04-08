@@ -3,10 +3,9 @@ package com.info.api.service.impl.common;
 import com.info.api.entity.RemittanceData;
 import com.info.api.repository.RemittanceDataRepository;
 import com.info.api.service.common.RemittanceDataService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -14,32 +13,22 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class RemittanceDataServiceImpl implements RemittanceDataService {
 
     private static final Logger logger = LoggerFactory.getLogger(RemittanceDataServiceImpl.class);
 
     private final RemittanceDataRepository remittanceDataRepository;
-    private final RemittanceDataProcessServiceImpl remittanceDataProcessService;
-
-    @Value("${INSTANT_CASH_API_USER_ID}")
-    private String INSTANT_CASH_API_USER_ID;
-
-    public RemittanceDataServiceImpl(RemittanceDataRepository remittanceDataRepository, RemittanceDataProcessServiceImpl remittanceDataProcessService) {
-        this.remittanceDataRepository = remittanceDataRepository;
-        this.remittanceDataProcessService = remittanceDataProcessService;
-    }
-
     @Override
     public RemittanceData save(RemittanceData remittanceData) {
         return remittanceDataRepository.save(remittanceData);
     }
 
     @Override
-    public int update(String status, String referenceNo) {
-        return remittanceDataRepository.updateRemittanceStatusByReferenceNo(status, referenceNo);
+    public int update(String status, String exchangeCode, String referenceNo) {
+        return remittanceDataRepository.updateRemittanceStatusByExchangeCodeAndReferenceNo(status, exchangeCode, referenceNo);
     }
 
-    @Async
     @Override
     public List<RemittanceData> saveAll(List<RemittanceData> remittanceDataList) {
         return remittanceDataRepository.saveAll(remittanceDataList);
@@ -62,19 +51,28 @@ public class RemittanceDataServiceImpl implements RemittanceDataService {
     }
 
     @Override
+    public Optional<RemittanceData> findByExchangeCodeAndReferenceNoAndProcessStatusesIsNot(String exchangeCode, String referenceNo, List<String> processStatuses) {
+        return remittanceDataRepository.findByExchangeCodeAndReferenceNoAndProcessStatusIsNotIn(exchangeCode, referenceNo, processStatuses);
+    }
+
+    @Override
     public List<RemittanceData> findAllByExchangeCodeAndReferenceNo(String exchangeCode, String referenceNo) {
         return remittanceDataRepository.findAllByExchangeCodeAndReferenceNo(exchangeCode, referenceNo);
     }
 
-
+    @Override
+    public List<RemittanceData> findAllByExchangeCodeAndMiddlewarePushAndFinalStatusAndSourceTypeOrProcessStatus(String exchangeCode, Integer middlewarePush, String sourceType, List<String> processStatuses) {
+        return remittanceDataRepository.findAllByExchangeCodeAndMiddlewarePushAndFinalStatusAndSourceTypeOrProcessStatusIn(exchangeCode, middlewarePush, sourceType, processStatuses);
+    }
     public List<RemittanceData> findAllByExchangeCodeAndMiddlewarePushAndSourceTypeAndProcessStatuses(String exchangeCode, Integer middlewarePush, String sourceType, List<String> processStatuses) {
         return remittanceDataRepository.findAllByExchangeCodeAndMiddlewarePushAndSourceTypeOrProcessStatusIn(exchangeCode, middlewarePush, sourceType, processStatuses);
     }
 
     @Override
-    public List<RemittanceData> processAndSaveRemittanceData(List<RemittanceData> remittanceDataList, String exchangeCode, String exchangeName) {
-        return remittanceDataProcessService.processDownloadData(remittanceDataList, exchangeCode, exchangeName);
+    public Optional<RemittanceData> findByExchangeCodeAndReferenceNoAndMiddlewarePushAndProcessStatus(String exchangeCode, String referenceNo, Integer middlewarePush, String processStatus) {
+        return remittanceDataRepository.findByExchangeCodeAndReferenceNoAndMiddlewarePushAndProcessStatus(exchangeCode, referenceNo, middlewarePush, processStatus);
     }
+
 
     @Override
     public List<RemittanceData> findAllByExchangeCodeAndSourceTypeAndProcessStatus(String exchangeCode, String sourceType, String status) {

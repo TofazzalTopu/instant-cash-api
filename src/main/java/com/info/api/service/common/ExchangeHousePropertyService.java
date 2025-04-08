@@ -1,5 +1,6 @@
 package com.info.api.service.common;
 
+
 import com.info.api.entity.ExchangeHouseProperty;
 
 import java.util.List;

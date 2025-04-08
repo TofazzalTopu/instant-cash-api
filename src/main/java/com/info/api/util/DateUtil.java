@@ -175,16 +175,18 @@ public class DateUtil {
 				 return converToSqltDate(sdf.parse(dateString));
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
+				e.printStackTrace();
 				return null;
 			}
 		}
-		
 	}
 
 	public static String currentDateTimeInUTC(String formate) {
 		final SimpleDateFormat sdf = new SimpleDateFormat(formate);
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-		return sdf.format(new Date());
+		final String utcTime = sdf.format(new Date());
+
+		return utcTime;
 	}
 
 	public static String currentDateTime(String formate) {
@@ -192,7 +194,6 @@ public class DateUtil {
 		String dateTime = dateFormat.format(new Date());
 		return dateTime;
 	}
-
 
 	public static String convertDateFormate(String dateString, String sourceFormat,String targetFormat) {
 		String dateStr = "";

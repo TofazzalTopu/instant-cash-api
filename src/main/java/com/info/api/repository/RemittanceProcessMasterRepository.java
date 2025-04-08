@@ -9,6 +9,6 @@ import java.util.Date;
 @Component
 public interface RemittanceProcessMasterRepository extends JpaRepository<RemittanceProcessMaster, Long> {
 
-    RemittanceProcessMaster findFirstByProcessDateAndExchangeHouseCodeAndApiDataAndProcessStatusOrderByIdDesc(Date date, String exchangeCode, int api_data, String processStatus);
+    RemittanceProcessMaster findFirstByProcessDateAndExchangeHouseCodeAndApiDataAndProcessStatusOrderByIdDesc(Date date, String exchangeCode, int apiData, String processStatus);
 
 }

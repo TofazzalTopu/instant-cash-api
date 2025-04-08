@@ -1,21 +1,25 @@
 package com.info.api.service.impl.ic;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.info.api.constants.Constants;
+import com.info.api.dto.PaymentApiResponse;
+import com.info.api.dto.SearchApiRequest;
 import com.info.api.dto.SearchApiResponse;
+import com.info.api.entity.*;
+import com.info.api.mapper.ICPaymentReceiveRemittanceMapper;
+import com.info.api.dto.ic.ICConfirmDTO;
 import com.info.api.dto.ic.ICExchangePropertyDTO;
 import com.info.api.dto.ic.ICOutstandingTransactionDTO;
-import com.info.api.entity.ApiTrace;
-import com.info.api.entity.ICCashRemittanceData;
-import com.info.api.mapper.ICPaymentReceiveRemittanceMapper;
 import com.info.api.service.common.ApiTraceService;
 import com.info.api.service.ic.ICCashRemittanceDataService;
+import com.info.api.service.ic.ICConfirmTransactionStatusService;
 import com.info.api.service.ic.ICPaymentReceiveService;
 import com.info.api.util.ApiUtil;
-import com.info.api.util.Constants;
 import com.info.api.util.ObjectConverter;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,106 +29,98 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 
 import static com.info.api.util.ObjectConverter.convertObjectToString;
+import static com.info.api.util.PasswordUtil.generateBase64Hash;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ICPaymentReceiveServiceImpl implements ICPaymentReceiveService {
-
     public static final Logger logger = LoggerFactory.getLogger(ICPaymentReceiveServiceImpl.class);
 
-    @Value("${IC_API_FINANCIAL_ID:BD01RH}")
-    public String IC_API_FINANCIAL_ID;
-
+    private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
-
     private final ApiTraceService apiTraceService;
-
     private final ICPaymentReceiveRemittanceMapper mapper;
     private final ICCashRemittanceDataService icCashRemittanceDataService;
+    private final ICConfirmTransactionStatusService icConfirmTransactionStatusService;
 
+    @Value("${INSTANT_CASH_API_USER_PASSWORD}")
+    String icPassword;
 
-    @Value("${bank.code}")
-    private String bankCode;
-
-    public ICPaymentReceiveServiceImpl(RestTemplate restTemplate,  ApiTraceService apiTraceService, ICPaymentReceiveRemittanceMapper mapper, ICCashRemittanceDataService icCashRemittanceDataService) {
-        this.restTemplate = restTemplate;
-        this.apiTraceService = apiTraceService;
-        this.mapper = mapper;
-        this.icCashRemittanceDataService = icCashRemittanceDataService;
-    }
-
+    @Value("${INSTANT_CASH_API_USER_RECEIVE_PAYMENT_API_USER_ID}")
+    String icPaymentUserId;
 
     @Override
-    public SearchApiResponse paymentReceive(@NotNull ICExchangePropertyDTO dto, @NotNull String referenceNo) {
-        SearchApiResponse searchApiResponse = new SearchApiResponse();
-        searchApiResponse.setPinno(referenceNo);
-        searchApiResponse.setReference(referenceNo);
+    public SearchApiResponse paymentReceive(@NotNull ICExchangePropertyDTO dto, SearchApiRequest searchApiRequest) {
+        SearchApiResponse searchApiResponse = mapSearchApiResponse(searchApiRequest);
         searchApiResponse.setExchCode(dto.getExchangeCode());
-        searchApiResponse.setOriginalRequest(referenceNo);
+        dto.setIcPaymentUserId(icPaymentUserId);
+        dto.setPassword(generateBase64Hash(icPaymentUserId, icPassword));
 
-        if (icCashRemittanceDataService.findByExchangeCodeAndReferenceNo(dto.getExchangeCode(), referenceNo).isPresent()) {
+        if (ApiUtil.validateIsICPropertiesIsNotExist(dto, dto.getPaymentReceiveUrl())) {
+            return mapper.createErrorResponse(searchApiResponse, Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_RECEIVE_PAYMENT);
+        }
+
+        if (icCashRemittanceDataService.findByExchangeCodeAndReferenceNo(dto.getExchangeCode(), searchApiRequest.getPinno()).isPresent()) {
             searchApiResponse.setErrorMessage(Constants.REFERENCE_NO_ALREADY_EXIST);
             return searchApiResponse;
         }
 
-        ApiUtil.validateICExchangePropertiesBeforeProceed(dto, dto.getPaymentReceiveUrl(), Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_RECEIVE_PAYMENT);
-
-        String response = "";
-        String uuid = UUID.randomUUID().toString();
-        ICCashRemittanceData icCashRemittanceData = new ICCashRemittanceData();
-        ApiTrace apiTrace = apiTraceService.create(dto.getExchangeCode(), Constants.REQUEST_TYPE_DOWNLOAD_REQ, null);
-        Optional.ofNullable(apiTrace).orElseThrow(() -> new RuntimeException("Unable to create ApiTrace!"));
-
+        String status = "";
+        ApiTrace apiTrace = apiTraceService.create(dto.getExchangeCode(), Constants.REQUEST_TYPE_SEARCH, null);
+        if (Objects.isNull(apiTrace)) return searchApiResponse;
         try {
-            String paymentUrl = dto.getPaymentReceiveUrl().trim() + "?reference=" + referenceNo.trim();
-            System.out.println("paymentUrl: " + paymentUrl);
-            HttpEntity<String> httpEntity = ApiUtil.createHttpEntity("", uuid, dto);
-            ResponseEntity<ICOutstandingTransactionDTO> responseEntity = restTemplate.exchange(paymentUrl, HttpMethod.GET, httpEntity, ICOutstandingTransactionDTO.class);
-            searchApiResponse.setOriginalResponse(String.valueOf(responseEntity.getBody()));
+            String paymentUrl = dto.getPaymentReceiveUrl().trim() + "?reference=" + searchApiRequest.getPinno().trim();
+            logger.info("Execute paymentReceive for ReferenceNo {} and Payment URL: {}", searchApiRequest.getPinno(), paymentUrl);
+            ResponseEntity<ICOutstandingTransactionDTO> responseEntity = restTemplate.exchange(paymentUrl, HttpMethod.GET, ApiUtil.createHttpEntity("", apiTrace.getId(), dto), ICOutstandingTransactionDTO.class);
+            logger.info("PaymentReceive Response: {}", responseEntity);
+            ICOutstandingTransactionDTO outstandingDTO = responseEntity.getBody();
+            searchApiResponse.setOriginalResponse(convertObjectToString(outstandingDTO));
 
-            if ((responseEntity.getStatusCode().equals(HttpStatus.OK)) && Objects.nonNull(responseEntity.getBody())) {
-                response = convertObjectToString(responseEntity.getBody());
-                icCashRemittanceData = mapper.prepareICCashRemittanceData(icCashRemittanceData, responseEntity.getBody(), dto.getExchangeCode(), apiTrace, true);
+            if ((responseEntity.getStatusCode().equals(HttpStatus.OK)) && responseEntity.hasBody()) {
 
-                if (Objects.nonNull(icCashRemittanceData)) {
-                    icCashRemittanceData = icCashRemittanceDataService.save(icCashRemittanceData);
-                }
+                RemittanceData remittanceData = mapper.prepareICCashRemittanceData(responseEntity.getBody(), dto.getExchangeCode(), apiTrace);
+                ICCashRemittanceData icCashRemittanceData = objectMapper.convertValue(remittanceData, ICCashRemittanceData.class);
+                logger.info("PaymentReceive ICCashRemittanceData: {} \n ", icCashRemittanceData);
+                if (Objects.nonNull(icCashRemittanceData)) icCashRemittanceDataService.save(icCashRemittanceData);
+
+                searchApiResponse.setPayoutStatus(String.valueOf(responseEntity.getStatusCode().value()));
                 mapper.mapSearchApiResponse(searchApiResponse, icCashRemittanceData);
-                apiTrace.setStatus(Constants.API_STATUS_VALID);
-            } else {
-                searchApiResponse.setApiStatus(Constants.API_STATUS_VALID);
-                searchApiResponse.setErrorMessage(ObjectConverter.convertObjectToString(responseEntity.getBody()));
-                apiTraceService.deleteById(apiTrace.getId());
-                logger.info("Tracing removed because no record found, uuid: {}",  maskSensitiveData(uuid));
-                return searchApiResponse;
-            }
-            searchApiResponse.setPayoutStatus(String.valueOf(responseEntity.getStatusCode().value()));
-            searchApiResponse.setApiStatus(String.valueOf(responseEntity.getStatusCode().value()));
-            logger.info("Execute paymentReceive for ReferenceNo: {}",  maskSensitiveData(referenceNo));
-        } catch (Exception e) {
-            response = e.getMessage();
-            apiTrace.setStatus(Constants.API_STATUS_ERROR);
-            searchApiResponse.setApiStatus(Constants.API_STATUS_INVALID);
-            searchApiResponse.setErrorMessage(ObjectConverter.convertObjectToString(response));
-            logger.error("Error in paymentReceive for ReferenceNo: {} uuid: {} Exception: {}", maskSensitiveData(referenceNo), maskSensitiveData(uuid), e.getMessage());
-        }
+                status = Constants.API_STATUS_VALID;
 
-        apiTrace.setRequestMsg(referenceNo);
-        apiTrace.setResponseMsg(response);
-        apiTrace.setCorrelationId(uuid);
-        apiTraceService.save(apiTrace);
-        logger.info("paymentReceive successful for ReferenceNo: [PROTECTED] uuid: [PROTECTED]");
+//               send IC confirm transaction notification
+                ICConfirmDTO icConfirmDTO = ICConfirmDTO.builder().newStatus(ApiUtil.getICTransactionStatus(remittanceData.getProcessStatus())).remarks("Downloaded.").reference(remittanceData.getReferenceNo()).build();
+                icConfirmTransactionStatusService.notifyPaymentStatus(new PaymentApiResponse(), dto, remittanceData, icConfirmDTO, searchApiRequest.getPinno(), false);
+            } else {
+                return mapResponse(searchApiResponse, responseEntity, apiTrace.getId());
+            }
+        } catch (Exception e) {
+            status = Constants.API_STATUS_ERROR;
+            searchApiResponse.setOriginalResponse(e.getMessage());
+            searchApiResponse.setErrorMessage(e.getMessage());
+            logger.error("Error in paymentReceive for ReferenceNo: {} ", searchApiRequest.getPinno(), e);
+        }
+        searchApiResponse.setApiStatus(status);
+        apiTraceService.addToApiTrace(apiTrace.getId(), searchApiResponse, searchApiRequest);
+        logger.info("\npaymentReceive for ReferenceNo: {} and Response: {} ", searchApiRequest.getPinno(), searchApiResponse.getOriginalResponse());
         return searchApiResponse;
     }
 
-    private String maskSensitiveData(String data) {
-        if (Objects.isNull(data)) {
-            return "";
-        }
-        return data.substring(0, 2) + "****" + data.substring(data.length() - 2);
+    private SearchApiResponse mapSearchApiResponse(SearchApiRequest searchApiRequest) {
+        SearchApiResponse searchApiResponse = new SearchApiResponse();
+        searchApiResponse.setPinno(searchApiRequest.getPinno());
+        searchApiResponse.setReference(searchApiRequest.getPinno());
+        searchApiResponse.setOriginalRequest(searchApiRequest.getPinno());
+        return searchApiResponse;
     }
+
+    private SearchApiResponse mapResponse(SearchApiResponse searchApiResponse, ResponseEntity<?> responseEntity, Long apiTraceId) {
+        searchApiResponse.setApiStatus(Constants.API_STATUS_INVALID);
+        searchApiResponse.setErrorMessage(ObjectConverter.convertObjectToString(responseEntity.getBody()));
+        logger.info(Constants.REFERENCE_NOT_EXIST, "paymentReceive()", apiTraceId);
+        return searchApiResponse;
+    }
+
 }
