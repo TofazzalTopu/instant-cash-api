@@ -70,7 +70,7 @@ public class ICOutstandingRemittanceServiceImpl implements ICOutstandingRemittan
         } catch (Exception e) {
             response = e.getMessage();
             status = Constants.API_STATUS_ERROR;
-            logger.error(" \nfetchICOutstandingRemittance-> TraceID: {}, Error: {}", trace.getId(), e.getMessage());
+            logger.error(" fetchICOutstandingRemittance-> TraceID: {}, Error: {}", trace.getId(), e.getMessage());
         }
 
         apiTraceService.saveApiTrace(trace, "", response, status);

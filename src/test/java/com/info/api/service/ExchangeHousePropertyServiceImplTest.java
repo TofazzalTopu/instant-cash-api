@@ -32,8 +32,8 @@ public class ExchangeHousePropertyServiceImplTest {
     public void testFindAll() {
         // Mock data
         List<ExchangeHouseProperty> mockProperties = Arrays.asList(
-                new ExchangeHouseProperty("IC_example_1", "value1"),
-                new ExchangeHouseProperty("IC_example_2", "value2")
+                new ExchangeHouseProperty("exchangeCode", "IC_example_1", "value1"),
+                new ExchangeHouseProperty("exchangeCode", "IC_example_2", "value2")
         );
 
         // Mock the repository call
@@ -53,7 +53,7 @@ public class ExchangeHousePropertyServiceImplTest {
     @Test
     public void testFindByExchangeCodeAndKeyLabel() {
         // Mock data
-        ExchangeHouseProperty mockProperty = new ExchangeHouseProperty("IC_example_1", "value1");
+        ExchangeHouseProperty mockProperty = new ExchangeHouseProperty("exchangeCode","IC_example_1", "value1");
 
         // Mock the repository call
         when(exchangeHousePropertyRepository.findByExchangeCodeAndKeyLabel("IC", "example_1"))
@@ -70,8 +70,8 @@ public class ExchangeHousePropertyServiceImplTest {
     public void testFindAllByExchangeCode() {
         // Mock data
         List<ExchangeHouseProperty> mockProperties = Arrays.asList(
-                new ExchangeHouseProperty("IC_example_1", "value1"),
-                new ExchangeHouseProperty("IC_example_2", "value2")
+                new ExchangeHouseProperty("exchangeCode", "IC_example_1", "value1"),
+                new ExchangeHouseProperty("exchangeCode", "IC_example_2", "value2")
         );
 
         // Mock the repository call

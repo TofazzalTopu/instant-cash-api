@@ -28,7 +28,6 @@ public class ApiClientScheduler {
 
     @Scheduled(fixedDelayString = "${API_SCHEDULER_INTERVAL}", initialDelay = 1000)
     public void apiClientScheduler() {
-        logger.info("Scheduler execution started. ");
         ExecutorService instantCashExecutor = Executors.newFixedThreadPool(1);
         try {
             if (isICSchedulerEnabled) instantCashExecutor.execute(instantCashAPIProcessor::process);
