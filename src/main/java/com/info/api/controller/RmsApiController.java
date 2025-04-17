@@ -26,22 +26,22 @@ public class RmsApiController {
 
     private final ApiService apiService;
 
-    @Operation(description = "Searches remittance data by reference PIN and exchange code.")
     @GetMapping(value = "/remittance")
+    @Operation(description = "Searches remittance data by reference PIN and exchange code.")
     public ResponseEntity<String> searchRemittance(@RequestHeader @NotBlank String userId, @RequestHeader String password, @RequestParam String bruserid, @RequestParam String brcode, @RequestParam String exchcode, @RequestParam String pinno, HttpServletRequest request) {
         SearchApiRequest searchApiRequest = new SearchApiRequest(bruserid, brcode, exchcode, pinno, null);
         String response = apiService.searchRemittance(searchApiRequest, request);
         return response != null ? ResponseEntity.ok(response) : ResponseEntity.status(HttpStatus.NOT_FOUND).body("No data found");
     }
 
-    @Operation(description = "Marks a remittance as paid using the payload provided.")
     @PutMapping(value = "/remittance")
+    @Operation(description = "Marks a remittance as paid using the payload provided.")
     public ResponseEntity<String> payRemittance(@RequestHeader String userId, @RequestHeader String password, @RequestBody String data, HttpServletRequest request) {
         return ResponseEntity.ok(apiService.payRemittance(data, request));
     }
 
-    @Operation(description = "Generates transaction reports filtered by exchange code and date range.")
     @GetMapping(value = "/transaction-report")
+    @Operation(description = "Generates transaction reports filtered by exchange code and date range.")
     public ResponseEntity<String> transactionReport(@RequestHeader @NotBlank String userId, @RequestHeader @NotBlank String password,
                                                     @RequestParam @NotBlank String exchcode, @RequestParam @NotBlank String fromDate,
                                                     @RequestParam @NotBlank String toDate, @RequestParam @Min(1) int pageNumber, @RequestParam @Min(1) int pageSize, HttpServletRequest request) {

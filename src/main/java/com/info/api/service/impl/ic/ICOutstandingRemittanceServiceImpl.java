@@ -49,7 +49,7 @@ public class ICOutstandingRemittanceServiceImpl implements ICOutstandingRemittan
         List<RemittanceData> remittanceDataArrayList = new ArrayList<>();
         List<ICOutstandingTransactionDTO> transactionDTOArrayList = new ArrayList<>();
 
-        if (ApiUtil.validateIsICPropertiesIsNotExist(icDTO, icDTO.getOutstandingUrl())) {
+        if (ApiUtil.isInvalidICProperties(icDTO, icDTO.getOutstandingUrl())) {
             logger.error(Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_OUTSTANDING_REMITTANCE);
             return remittanceDataArrayList;
         }

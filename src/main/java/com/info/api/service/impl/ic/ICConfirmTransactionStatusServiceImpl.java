@@ -50,7 +50,7 @@ public class ICConfirmTransactionStatusServiceImpl implements ICConfirmTransacti
     @Override
     public List<RemittanceData> confirmOutstandingTransactionStatus(ICExchangePropertyDTO icDTO, List<RemittanceData> remittanceDataList) {
 
-        if (ApiUtil.validateIsICPropertiesIsNotExist(icDTO, icDTO.getNotifyRemStatusUrl())) {
+        if (ApiUtil.isInvalidICProperties(icDTO, icDTO.getNotifyRemStatusUrl())) {
             logger.error(Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_NOTIFY_STATUS);
             return new ArrayList<>();
         }
@@ -110,7 +110,7 @@ public class ICConfirmTransactionStatusServiceImpl implements ICConfirmTransacti
     public PaymentApiResponse confirmCahTransactionPayment(PaymentApiResponse paymentApiResponse, PaymentApiRequest paymentApiRequest, ICExchangePropertyDTO icDTO) {
         paymentApiResponse.setTranNo(paymentApiRequest.getTranNo());
 
-        if (ApiUtil.validateIsICPropertiesIsNotExist(icDTO, icDTO.getNotifyRemStatusUrl())) {
+        if (ApiUtil.isInvalidICProperties(icDTO, icDTO.getNotifyRemStatusUrl())) {
             return createErrorResponse(paymentApiResponse, Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_NOTIFY_STATUS);
         }
         try {

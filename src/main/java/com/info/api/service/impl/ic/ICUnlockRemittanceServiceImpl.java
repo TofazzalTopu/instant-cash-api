@@ -55,7 +55,7 @@ public class ICUnlockRemittanceServiceImpl implements ICUnlockRemittanceService 
         APIResponse<String> apiResponse = new APIResponse<>();
         dto.setPassword(generateBase64Hash(icUserId, icPassword));
 
-        if (ApiUtil.validateIsICPropertiesIsNotExist(dto, dto.getUnlockUrl())) {
+        if (ApiUtil.isInvalidICProperties(dto, dto.getUnlockUrl())) {
             return createErrorResponse(apiResponse, Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_UNLOCK_REMITTANCE);
         }
         Optional<RemittanceData> remittanceDataOptional = remittanceDataService.findByExchangeCodeAndReferenceNoAndProcessStatusesIsNot(dto.getExchangeCode(), referenceNo, Arrays.asList(RemittanceData.COMPLETED, RemittanceData.UNLOCK));

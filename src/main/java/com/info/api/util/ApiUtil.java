@@ -100,12 +100,26 @@ public class ApiUtil {
         }
     }
 
-    public static boolean validateIsICPropertiesIsNotExist(ICExchangePropertyDTO dto, String url) {
+    public static boolean isInvalidICProperties(ICExchangePropertyDTO dto) {
+        return Objects.isNull(dto.getExchangeCode()) || Objects.isNull(dto.getOcpApimSubKey()) || Objects.isNull(dto.getAgentId()) || Objects.isNull(dto.getPassword())
+                || Objects.isNull(dto.getOutstandingUrl()) || Objects.isNull(dto.getStatusUrl()) || Objects.isNull(dto.getNotifyRemStatusUrl()) || Objects.isNull(dto.getPaymentReceiveUrl())
+                || Objects.isNull(dto.getUnlockUrl()) || Objects.isNull(dto.getTransactionReportUrl());
+    }
+
+    public static boolean isInvalidICProperties(ICExchangePropertyDTO dto, String url) {
         return Objects.isNull(url) || Objects.isNull(dto.getExchangeCode()) || Objects.isNull(dto.getOcpApimSubKey()) || Objects.isNull(dto.getAgentId()) || Objects.isNull(dto.getPassword());
     }
 
+    public static boolean isInValidICExchangeProperties(ICExchangePropertyDTO dto) {
+        if (isInvalidICProperties(dto)) {
+            logger.error("Instant Cash Scheduler aborted! Please add Instant Cash API Properties into the DB.");
+            return true;
+        }
+        return false;
+    }
+
     public static void validateICExchangePropertiesBeforeProceed(ICExchangePropertyDTO dto, String url, String message) {
-        if (validateIsICPropertiesIsNotExist(dto, url)) {
+        if (isInvalidICProperties(dto, url)) {
             logger.error(message);
             throw new RuntimeException(message);
         }

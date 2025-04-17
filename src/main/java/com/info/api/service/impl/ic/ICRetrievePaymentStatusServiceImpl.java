@@ -28,18 +28,18 @@ import static com.info.api.util.ResponseUtil.mapAPIErrorResponse;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class ICRetrievePaymentStatusServiceImpl implements ICRetrievePaymentStatusService {
+public class ICRetrievePaymentStatusServiceImpl implements ICRetrievePaymentStatusService<ICPaymentStatusDTO> {
     public static final Logger logger = LoggerFactory.getLogger(ICRetrievePaymentStatusServiceImpl.class);
 
     private final RestTemplate restTemplate;
     private final ApiTraceService apiTraceService;
 
     @Override
-    public APIResponse<String> getPaymentStatus(ICExchangePropertyDTO dto, String referenceNo) {
+    public APIResponse<ICPaymentStatusDTO> getPaymentStatus(ICExchangePropertyDTO dto, String referenceNo) {
         String response = "";
-        APIResponse<String> apiResponse = new APIResponse<>();
+        APIResponse<ICPaymentStatusDTO> apiResponse = new APIResponse<>();
 
-        if (ApiUtil.validateIsICPropertiesIsNotExist(dto, dto.getStatusUrl())) {
+        if (ApiUtil.isInvalidICProperties(dto, dto.getStatusUrl())) {
             return mapAPIErrorResponse(apiResponse, referenceNo, Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_RETRIEVE_PAYMENT_STATUS);
         }
 
@@ -59,7 +59,7 @@ public class ICRetrievePaymentStatusServiceImpl implements ICRetrievePaymentStat
                 logger.info("\ngetPaymentStatus Response data: {}", responseEntity.getBody());
                 response = convertObjectToString(icPaymentStatusDTO);
                 apiResponse.setApiStatus(Constants.API_STATUS_VALID);
-                apiResponse.setData(response);
+                apiResponse.setData(icPaymentStatusDTO);
             }
         } catch (HttpStatusCodeException e) {
             response = e.getMessage();

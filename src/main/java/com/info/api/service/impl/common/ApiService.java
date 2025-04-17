@@ -5,9 +5,7 @@ import com.info.api.dto.PaymentApiRequest;
 import com.info.api.dto.PaymentApiResponse;
 import com.info.api.dto.SearchApiRequest;
 import com.info.api.dto.SearchApiResponse;
-import com.info.api.dto.ic.APIResponse;
-import com.info.api.dto.ic.ICExchangePropertyDTO;
-import com.info.api.dto.ic.TransactionReportRequestBody;
+import com.info.api.dto.ic.*;
 import com.info.api.service.ic.ICConfirmTransactionStatusService;
 import com.info.api.service.ic.ICPaymentReceiveService;
 import com.info.api.service.ic.ICRetrievePaymentStatusService;
@@ -20,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Objects;
 
 import static com.info.api.util.ObjectConverter.convertObjectToString;
@@ -33,8 +32,8 @@ public class ApiService {
     private static final Logger logger = LoggerFactory.getLogger(ApiService.class);
 
     private final ICPaymentReceiveService icPaymentReceiveService;
-    private final ICTransactionReportService icTransactionReportService;
-    private final ICRetrievePaymentStatusService icRetrievePaymentStatusService;
+    private final ICRetrievePaymentStatusService<ICPaymentStatusDTO> icRetrievePaymentStatusService;
+    private final ICTransactionReportService<List<ICTransactionReportDTO>> icTransactionReportService;
     private final ICConfirmTransactionStatusService icConfirmTransactionStatusService;
 
     private static final String X_FORWARDED_FOR = "X-FORWARDED-FOR";
@@ -95,7 +94,8 @@ public class ApiService {
         ICExchangePropertyDTO icExchangeProperties = ApiUtil.getICExchangeProperties();
         if (icExchangeProperties.getExchangeCode().equals(report.getExchcode())) {
             icExchangeProperties.setPassword(generateBase64Hash(icUserId, icPassword));
-            apiResponse = icTransactionReportService.fetchICTransactionReport(icExchangeProperties, report);
+            APIResponse<List<ICTransactionReportDTO>> response = icTransactionReportService.fetchICTransactionReport(icExchangeProperties, report);
+            apiResponse.setData(convertObjectToString(response.getData()));
         }
 
         return convertObjectToString(apiResponse);
@@ -107,7 +107,8 @@ public class ApiService {
         ICExchangePropertyDTO icExchangeProperties = ApiUtil.getICExchangeProperties();
         if (icExchangeProperties.getExchangeCode().equals(exchcode)) {
             icExchangeProperties.setPassword(generateBase64Hash(icUserId, icPassword));
-            apiResponse = icRetrievePaymentStatusService.getPaymentStatus(icExchangeProperties, reference);
+            APIResponse<ICPaymentStatusDTO> response = icRetrievePaymentStatusService.getPaymentStatus(icExchangeProperties, reference);
+            apiResponse.setData(convertObjectToString(response.getData()));
         }
         return apiResponse;
     }
@@ -116,7 +117,7 @@ public class ApiService {
         return "Required field should not empty (). bruserid = " + apiRequest.getBruserid() + ",brcode = " + apiRequest.getBrcode() + ",exchcode = " + apiRequest.getExchcode() + ",pinno = " + apiRequest.getPinno();
     }
 
-    private APIResponse mapInvalidParameters(APIResponse apiResponse) {
+    private <T> APIResponse<T> mapInvalidParameters(APIResponse<T> apiResponse) {
         logger.error("fetchTransactionReport() errorMessage: {}", Constants.INVALID_PARAMETERS);
         apiResponse.setErrorMessage("Invalid parameters");
         apiResponse.setApiStatus(Constants.API_STATUS_INVALID);

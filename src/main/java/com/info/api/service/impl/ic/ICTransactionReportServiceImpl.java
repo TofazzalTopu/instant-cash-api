@@ -29,7 +29,7 @@ import static com.info.api.util.ResponseUtil.createErrorResponse;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class ICTransactionReportServiceImpl implements ICTransactionReportService {
+public class ICTransactionReportServiceImpl implements ICTransactionReportService<List<ICTransactionReportDTO>> {
     public static final Logger logger = LoggerFactory.getLogger(ICTransactionReportServiceImpl.class);
 
     private final RestTemplate restTemplate;
@@ -38,7 +38,7 @@ public class ICTransactionReportServiceImpl implements ICTransactionReportServic
     @Override
     public APIResponse<List<ICTransactionReportDTO>> fetchICTransactionReport(ICExchangePropertyDTO icDTO, TransactionReportRequestBody report) {
         APIResponse<List<ICTransactionReportDTO>> apiResponse = new APIResponse<>();
-        if (ApiUtil.validateIsICPropertiesIsNotExist(icDTO, icDTO.getTransactionReportUrl())) {
+        if (ApiUtil.isInvalidICProperties(icDTO, icDTO.getTransactionReportUrl())) {
             return createErrorResponse(apiResponse, Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_TRANSACTION_REPORT);
         }
 

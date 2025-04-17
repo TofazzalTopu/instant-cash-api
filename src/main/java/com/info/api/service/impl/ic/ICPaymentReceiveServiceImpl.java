@@ -57,7 +57,7 @@ public class ICPaymentReceiveServiceImpl implements ICPaymentReceiveService {
     public SearchApiResponse paymentReceive(@NotBlank ICExchangePropertyDTO dto, SearchApiRequest searchApiRequest) {
         SearchApiResponse searchApiResponse = initializeSearchApiResponse(searchApiRequest, dto);
 
-        if (ApiUtil.validateIsICPropertiesIsNotExist(dto, dto.getPaymentReceiveUrl())) {
+        if (ApiUtil.isInvalidICProperties(dto, dto.getPaymentReceiveUrl())) {
             return mapper.createErrorResponse(searchApiResponse, Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_RECEIVE_PAYMENT);
         }
 

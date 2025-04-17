@@ -1,10 +1,8 @@
 package com.info.api.processor;
 
-import com.info.api.dto.ic.ICExchangePropertyDTO;
 import com.info.api.entity.RemittanceData;
-import com.info.api.service.ic.ICConfirmPaidStatusService;
-import com.info.api.service.ic.ICConfirmTransactionStatusService;
-import com.info.api.service.ic.ICOutstandingRemittanceService;
+import com.info.api.dto.ic.ICExchangePropertyDTO;
+import com.info.api.service.ic.*;
 import com.info.api.util.ApiUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -34,12 +32,20 @@ public class InstantCashAPIProcessor {
 
 
     public void process() {
-        ICExchangePropertyDTO icExchangePropertyDTO = ApiUtil.getICExchangeProperties();
-        icExchangePropertyDTO.setPassword(generateBase64Hash(icUserId, icPassword));
-        List<RemittanceData> remittanceDataList = icOutstandingRemittanceService.fetchICOutstandingRemittance(icExchangePropertyDTO);
-        if (!remittanceDataList.isEmpty()) {
-            icConfirmTransactionStatusService.confirmOutstandingTransactionStatus(icExchangePropertyDTO, remittanceDataList);
+        logger.info("InstantCashAPIProcessor started..........");
+        try {
+            ICExchangePropertyDTO icExchangePropertyDTO = ApiUtil.getICExchangeProperties();
+            icExchangePropertyDTO.setPassword(generateBase64Hash(icUserId, icPassword));
+            if(ApiUtil.isInValidICExchangeProperties(icExchangePropertyDTO)) return;
+
+            List<RemittanceData> remittanceDataList = icOutstandingRemittanceService.fetchICOutstandingRemittance(icExchangePropertyDTO);
+            if (!remittanceDataList.isEmpty()) {
+                icConfirmTransactionStatusService.confirmOutstandingTransactionStatus(icExchangePropertyDTO, remittanceDataList);
+            }
+            icConfirmPaidStatusService.notifyPaidStatus(icExchangePropertyDTO);
+            logger.info("InstantCashAPIProcessor ended.");
+        } catch (Exception ex) {
+            logger.error("InstantCashAPIProcessor error: {} ", ex.getMessage());
         }
-        icConfirmPaidStatusService.notifyPaidStatus(icExchangePropertyDTO);
     }
 }

@@ -42,7 +42,7 @@ public class ICConfirmPaidStatusServiceImpl implements ICConfirmPaidStatusServic
 
     @Override
     public void notifyPaidStatus(ICExchangePropertyDTO icDTO) {
-        if (ApiUtil.validateIsICPropertiesIsNotExist(icDTO, icDTO.getNotifyRemStatusUrl())) {
+        if (ApiUtil.isInvalidICProperties(icDTO, icDTO.getNotifyRemStatusUrl())) {
             logger.error(Constants.EXCHANGE_HOUSE_PROPERTY_NOT_EXIST_FOR_NOTIFY_STATUS);
             return;
         }
